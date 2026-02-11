@@ -1,0 +1,35 @@
+[project]
+name = "mdbc-api"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "fastapi[standard]>=0.128.7",
+    "pwdlib[argon2]>=0.3.0",
+    "sqlalchemy>=2.0.46",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+    "ruff>=0.15.0",
+    "taskipy>=1.14.1",
+]
+
+[tool.ruff]
+line-length = 88
+extend-exclude = ['migrations']
+
+[tool.ruff.lint]
+preview = true
+select = ['I', 'F', 'E', 'W', 'PL', 'PT', 'FAST']
+
+[tool.ruff.format]
+preview = true
+quote-style = 'single'
+
+[tool.taskipy.tasks]
+format = 'ruff format && ruff check --fix'
+lint = 'ruff check .'
+run = 'fastapi dev src/app.py'
