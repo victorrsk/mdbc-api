@@ -7,7 +7,7 @@ requires-python = ">=3.14"
 dependencies = [
     "fastapi[standard]>=0.128.7",
     "pwdlib[argon2]>=0.3.0",
-    "sqlalchemy>=2.0.46",
+    "sqlmodel>=0.0.32",
 ]
 
 [dependency-groups]
@@ -19,7 +19,7 @@ dev = [
 
 [tool.ruff]
 line-length = 88
-extend-exclude = ['migrations']
+extend-exclude = ['migrations', 'database']
 
 [tool.ruff.lint]
 preview = true

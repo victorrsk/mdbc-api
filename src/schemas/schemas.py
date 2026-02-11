@@ -1,14 +1,15 @@
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 
-class UserIn(BaseModel):
-    id: int | None = None
+class UserSchema(BaseModel):
     username: str = Field(min_length=3, max_length=200, examples=['john'])
     email: EmailStr = Field(examples=['myemail@email.com'])
+    # model_config = ConfigDict(from_attributes=True)
+
+
+class UserIn(UserSchema):
     password: str = Field(min_length=8, max_length=200, examples=['mysecretpwd123'])
 
 
-class UserOut(BaseModel):
+class UserOut(UserSchema):
     id: int
-    username: str
-    email: EmailStr
