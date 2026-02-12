@@ -13,3 +13,7 @@ class UserIn(UserSchema):
 
 class UserOut(UserSchema):
     id: int
+
+
+class UserList(BaseModel):
+    users: list[UserOut]

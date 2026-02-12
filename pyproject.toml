@@ -32,4 +32,4 @@ quote-style = 'single'
 [tool.taskipy.tasks]
 format = 'ruff format && ruff check --fix'
 lint = 'ruff check .'
-run = 'fastapi dev src/app.py'
+run = 'fastapi dev app.py'

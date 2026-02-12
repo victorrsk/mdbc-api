@@ -1,57 +1,108 @@
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Path, status
-from pwdlib import PasswordHash
+from fastapi import APIRouter, Depends, HTTPException, Path, status
 from sqlmodel import Session, select
 
-from src.database.engine import get_engine
+from src.database.session import get_session
+from src.database.utils import clean_user_data
 from src.models.users import User
-from src.schemas.schemas import UserIn, UserOut
+from src.schemas.schemas import UserIn, UserList, UserOut
+from src.security import get_pwd_hash
 
 router = APIRouter(prefix='/users', tags=['users'])
 
-
-pwd_context = PasswordHash.recommended()
+# types
+T_Session = Annotated[Session, Depends(get_session)]
+T_PositiveInt = Annotated[int, Path(gt=0)]
 
 
 @router.post('/', response_model=UserOut, status_code=status.HTTP_201_CREATED)
-def create_user(user: UserIn):
-    # FIXME: create sanitization function
-    user.username = user.username.lower().replace(' ', '')
-    user.email = user.email.replace(' ', '')
-    user.password = pwd_context.hash(user.password.replace(' ', ''))
-
+def create_user(user: UserIn, session: T_Session):
+    user = clean_user_data(user)
+    user.password = get_pwd_hash(user.password)
     user_db = User(
         id=None, username=user.username, email=user.email, password=user.password
     )
 
-    with Session(get_engine()) as session:
-        result = session.scalar(
-            select(User).where(
-                (User.username == user_db.username) | (User.email == user_db.email)
-            )
+    result = session.scalar(
+        select(User).where(
+            (User.username == user_db.username) | (User.email == user_db.email)
         )
-        if result:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail='username or email already in use',
-            )
-        session.add(user_db)
-        session.commit()
-        session.refresh(user_db)
+    )
+    if result:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail='username or email already in use',
+        )
+    session.add(user_db)
+    session.commit()
+    session.refresh(user_db)
 
     return user_db
 
 
-# FIXME improve read_user
-
-
 @router.get('/{user_id}', response_model=UserOut, status_code=status.HTTP_200_OK)
-def read_user(user_id: Annotated[int, Path(gt=0)]):
-    with Session(get_engine()) as session:
-        user_db = session.scalar(select(User).where(User.id == user_id))
-        if not user_db:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail='user id not found'
-            )
-        return user_db
+def read_user(user_id: T_PositiveInt, session: T_Session):
+    user_db = session.scalar(select(User).where(User.id == user_id))
+    if not user_db:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail='user not found'
+        )
+    return user_db
+
+
+@router.get('/', response_model=UserList)
+def read_users(session: T_Session):
+    users_list = session.scalars(select(User))
+
+    return {'users': users_list}
+
+
+# FIXME
+# erro de unique constraint
+
+
+@router.put('/{user_id}', response_model=UserOut)
+def update_user(user_id: T_PositiveInt, user: UserIn, session: T_Session):
+    user = clean_user_data(user)
+    user.password = get_pwd_hash(user.password)
+
+    user_db = session.scalar(select(User).where(User.id == user_id))
+
+    if not user_db:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail='user not found'
+        )
+    test_user = session.scalar(
+        select(User).where(
+            ((User.username == user_db.username) | (User.email == user_db.email))
+            & (User.id != user_id)
+        )
+    )
+    if test_user:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail='username or email already in use',
+        )
+    user_db.username = user.username
+    user_db.email = user.email
+    user_db.password = user.password
+
+    session.add(user_db)
+    session.commit()
+    session.refresh(user_db)
+
+    return user_db
+
+
+@router.delete('/{user_id}', status_code=status.HTTP_200_OK)
+def delete_user(user_id: T_PositiveInt, session: T_Session):
+    user_db = session.scalar(select(User).where(User.id == user_id))
+    if not user_db:
+        raise HTTPException(
+            detail='user not found', status_code=status.HTTP_404_NOT_FOUND
+        )
+    session.delete(user_db)
+    session.commit()
+
+    return {'message': 'user deleted'}
