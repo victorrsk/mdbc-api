@@ -13,6 +13,7 @@ dependencies = [
 [dependency-groups]
 dev = [
     "pytest>=9.0.2",
+    "pytest-cov>=7.0.0",
     "ruff>=0.15.0",
     "taskipy>=1.14.1",
 ]
@@ -29,7 +30,13 @@ select = ['I', 'F', 'E', 'W', 'PL', 'PT', 'FAST']
 preview = true
 quote-style = 'single'
 
+[tool.pytest]
+pythonpath = ['.']
+
 [tool.taskipy.tasks]
 format = 'ruff format && ruff check --fix'
 lint = 'ruff check .'
 run = 'fastapi dev app.py'
+pre_test = 'task format'
+test = 'pytest -vv --cov=. -x'
+post_test = 'coverage html'
