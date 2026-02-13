@@ -1,19 +1,16 @@
-from typing import Annotated
+from fastapi import APIRouter, HTTPException, status
+from sqlmodel import select
 
-from fastapi import APIRouter, Depends, HTTPException, Path, status
-from sqlmodel import Session, select
-
-from src.database.session import get_session
-from src.database.utils import clean_user_data
+from src.database.utils import clean_user_data, search_user
 from src.models.users import User
 from src.schemas.schemas import UserIn, UserList, UserOut
 from src.security import get_pwd_hash
+from src.types import T_PositiveInt, T_Session
 
+# api router for /users endpoints
 router = APIRouter(prefix='/users', tags=['users'])
 
-# types
-T_Session = Annotated[Session, Depends(get_session)]
-T_PositiveInt = Annotated[int, Path(gt=0)]
+# read search_user() definition for its behavior explanation
 
 
 @router.post('/', response_model=UserOut, status_code=status.HTTP_201_CREATED)
@@ -43,11 +40,9 @@ def create_user(user: UserIn, session: T_Session):
 
 @router.get('/{user_id}', response_model=UserOut, status_code=status.HTTP_200_OK)
 def read_user(user_id: T_PositiveInt, session: T_Session):
-    user_db = session.scalar(select(User).where(User.id == user_id))
-    if not user_db:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail='user not found'
-        )
+    # raises 404 if user not found
+    user_db = search_user(id=user_id, session=session)
+    # if the user exists then return
     return user_db
 
 
@@ -58,24 +53,16 @@ def read_users(session: T_Session):
     return {'users': users_list}
 
 
-# FIXME
-# erro de unique constraint
-
-
 @router.put('/{user_id}', response_model=UserOut)
 def update_user(user_id: T_PositiveInt, user: UserIn, session: T_Session):
     user = clean_user_data(user)
     user.password = get_pwd_hash(user.password)
 
-    user_db = session.scalar(select(User).where(User.id == user_id))
+    user_db = search_user(id=user_id, session=session)
 
-    if not user_db:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail='user not found'
-        )
     test_user = session.scalar(
         select(User).where(
-            ((User.username == user_db.username) | (User.email == user_db.email))
+            ((User.username == user.username) | (User.email == user.email))
             & (User.id != user_id)
         )
     )
@@ -84,6 +71,7 @@ def update_user(user_id: T_PositiveInt, user: UserIn, session: T_Session):
             status_code=status.HTTP_409_CONFLICT,
             detail='username or email already in use',
         )
+    # overrides the actual user data with the received from the api
     user_db.username = user.username
     user_db.email = user.email
     user_db.password = user.password
@@ -91,17 +79,13 @@ def update_user(user_id: T_PositiveInt, user: UserIn, session: T_Session):
     session.add(user_db)
     session.commit()
     session.refresh(user_db)
-
+    # then returns the same user with the new data
     return user_db
 
 
 @router.delete('/{user_id}', status_code=status.HTTP_200_OK)
 def delete_user(user_id: T_PositiveInt, session: T_Session):
-    user_db = session.scalar(select(User).where(User.id == user_id))
-    if not user_db:
-        raise HTTPException(
-            detail='user not found', status_code=status.HTTP_404_NOT_FOUND
-        )
+    user_db = search_user(id=user_id, session=session)
     session.delete(user_db)
     session.commit()
 
