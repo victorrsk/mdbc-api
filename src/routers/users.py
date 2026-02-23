@@ -1,11 +1,16 @@
-from fastapi import APIRouter, HTTPException, status
+from typing import Annotated
+
+from fastapi import APIRouter, HTTPException, status, Depends
 from sqlmodel import select
 
 from src.database.utils import clean_user_data, search_user
 from src.models.users import User
 from src.schemas.schemas import UserIn, UserList, UserOut
-from src.security import get_pwd_hash
+from src.security import get_pwd_hash, get_current_user
 from src.types import T_PositiveInt, T_Session
+
+
+Current_user = Annotated[User, Depends(get_current_user)]
 
 # api router for /users endpoints
 router = APIRouter(prefix='/users', tags=['users'])
@@ -39,7 +44,7 @@ def create_user(user: UserIn, session: T_Session):
 
 
 @router.get('/{user_id}', response_model=UserOut, status_code=status.HTTP_200_OK)
-def read_user(user_id: T_PositiveInt, session: T_Session):
+def read_user(user_id: T_PositiveInt, session: T_Session, current_user: Current_user):
     # raises 404 if user not found
     user_db = search_user(id=user_id, session=session)
     # if the user exists then return

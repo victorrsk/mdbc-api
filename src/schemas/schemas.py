@@ -17,3 +17,8 @@ class UserOut(UserSchema):
 
 class UserList(BaseModel):
     users: list[UserOut]
+
+
+class TokenSchema(BaseModel):
+    token_type: str
+    access_token: str
