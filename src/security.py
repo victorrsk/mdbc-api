@@ -50,6 +50,8 @@ def get_current_user(token: Token, session: T_Session):
 
     try:
         payload = jwt.decode(token, Settings().SECRET_KEY, Settings().TOKEN_ALGORITHM)
+        if 'sub' not in payload.keys():
+            raise credentials_exception
         sub_email = payload['sub']
         if not sub_email:
             raise credentials_exception
