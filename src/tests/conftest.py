@@ -5,6 +5,7 @@ from sqlmodel import Session, StaticPool, create_engine
 from app import app
 from src.database.session import SQLModel, get_session
 from src.models.users import User
+from src.security import get_pwd_hash
 
 
 @pytest.fixture
@@ -45,12 +46,18 @@ def client(session):
 
 @pytest.fixture
 def user(session):
+    clean_pwd = 'password123'
     user_ = User(
-        id=None, username='test', email='testemail@email.com', password='password123'
+        id=None,
+        username='test',
+        email='testemail@email.com',
+        password=get_pwd_hash(clean_pwd),
     )
 
     session.add(user_)
     session.commit()
     session.refresh(user_)
+    # creates an clean_pwd attr to use the plain pwd in tests
+    setattr(user_, 'clean_pwd', clean_pwd)
 
     return user_
