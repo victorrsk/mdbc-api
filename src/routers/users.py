@@ -1,16 +1,15 @@
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import select
 
 from src.database.utils import clean_user_data, search_user
 from src.models.users import User
 from src.schemas.schemas import UserIn, UserList, UserOut
-from src.security import get_pwd_hash, get_current_user
+from src.security import get_current_user, get_pwd_hash
 from src.types import T_PositiveInt, T_Session
 
-
-Current_user = Annotated[User, Depends(get_current_user)]
+CurrentUser = Annotated[User, Depends(get_current_user)]
 
 # api router for /users endpoints
 router = APIRouter(prefix='/users', tags=['users'])
@@ -44,7 +43,7 @@ def create_user(user: UserIn, session: T_Session):
 
 
 @router.get('/{user_id}', response_model=UserOut, status_code=status.HTTP_200_OK)
-def read_user(user_id: T_PositiveInt, session: T_Session, current_user: Current_user):
+def read_user(user_id: T_PositiveInt, session: T_Session, current_user: CurrentUser):
     # raises 404 if user not found
     user_db = search_user(id=user_id, session=session)
     # if the user exists then return
@@ -52,19 +51,25 @@ def read_user(user_id: T_PositiveInt, session: T_Session, current_user: Current_
 
 
 @router.get('/', response_model=UserList)
-def read_users(session: T_Session):
+def read_users(session: T_Session, current_user: CurrentUser):
     users_list = session.scalars(select(User))
 
     return {'users': users_list}
 
 
 @router.put('/{user_id}', response_model=UserOut)
-def update_user(user_id: T_PositiveInt, user: UserIn, session: T_Session):
+def update_user(
+    user_id: T_PositiveInt, user: UserIn, session: T_Session, current_user: CurrentUser
+):
+    if user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail='not enough permission'
+        )
     user = clean_user_data(user)
     user.password = get_pwd_hash(user.password)
 
     user_db = search_user(id=user_id, session=session)
-
+    # verifies if other user uses the same email or username
     test_user = session.scalar(
         select(User).where(
             ((User.username == user.username) | (User.email == user.email))
@@ -89,7 +94,11 @@ def update_user(user_id: T_PositiveInt, user: UserIn, session: T_Session):
 
 
 @router.delete('/{user_id}', status_code=status.HTTP_200_OK)
-def delete_user(user_id: T_PositiveInt, session: T_Session):
+def delete_user(user_id: T_PositiveInt, session: T_Session, current_user: CurrentUser):
+    if user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail='not enough permission'
+        )
     user_db = search_user(id=user_id, session=session)
     session.delete(user_db)
     session.commit()
