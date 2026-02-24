@@ -61,3 +61,14 @@ def user(session):
     setattr(user_, 'clean_pwd', clean_pwd)
 
     return user_
+
+
+@pytest.fixture
+def token(client, user):
+    response = client.post(
+        '/auth/token', data={'username': user.email, 'password': user.clean_pwd}
+    )
+
+    _token = response.json()['access_token']
+
+    return _token

@@ -120,4 +120,5 @@ def test_nonexistent_email_in_token(client):
     assert response.json() == {'detail': 'could not validate credentials'}
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
+
 # --------------------------------------

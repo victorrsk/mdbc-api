@@ -45,8 +45,10 @@ def test_create_user_email_in_use(client, user):
     assert response.json() == {'detail': 'username or email already in use'}
 
 
-def test_read_user(client, user):
-    response = client.get(f'/users/{user.id}')
+def test_read_user(client, user, token):
+    response = client.get(
+        f'/users/{user.id}', headers={'Authorization': f'Bearer {token}'}
+    )
     assert response.json() == {
         'id': user.id,
         'username': user.username,
