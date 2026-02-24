@@ -42,3 +42,9 @@ run = 'fastapi dev app.py'
 pre_test = 'task format'
 test = 'pytest -vv --cov=. -x'
 post_test = 'coverage html'
+
+[tool.coverage.run]
+omit = [
+    "src/database/*",
+    "app.py"
+]
