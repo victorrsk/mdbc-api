@@ -1,6 +1,6 @@
 from src.schemas.schemas import UserIn
 from fastapi import HTTPException, status
-from src.types import T_Session
+from src.database.session import T_Session
 from src.models.users import User
 
 from sqlmodel import select

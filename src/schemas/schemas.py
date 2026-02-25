@@ -22,3 +22,12 @@ class UserList(BaseModel):
 class TokenSchema(BaseModel):
     token_type: str
     access_token: str
+
+
+class AuthorIn(BaseModel):
+    name: str
+
+
+class AuthorOut(AuthorIn):
+    id: int
+    created_by_id: int
