@@ -1,15 +1,12 @@
-from typing import Annotated
-
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, HTTPException, status
 from sqlmodel import select
 
+from src.database.session import T_Session
 from src.database.utils import clean_user_data, search_user
 from src.models.users import User
 from src.schemas.schemas import UserIn, UserList, UserOut
-from src.security import get_current_user, get_pwd_hash
-from src.types import T_PositiveInt, T_Session
-
-CurrentUser = Annotated[User, Depends(get_current_user)]
+from src.security import CurrentUser, get_pwd_hash
+from src.types import T_PositiveInt
 
 # api router for /users endpoints
 router = APIRouter(prefix='/users', tags=['users'])

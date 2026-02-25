@@ -1,10 +1,11 @@
 from fastapi import APIRouter, HTTPException, status
 from sqlmodel import select
 
+from src.database.session import T_Session
 from src.models.users import User
 from src.schemas.schemas import TokenSchema
 from src.security import create_access_token, verify_pwd
-from src.types import OAuthForm, T_Session
+from src.types import OAuthForm
 
 router = APIRouter(prefix='/auth', tags=['auth'])
 
