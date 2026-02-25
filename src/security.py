@@ -1,14 +1,16 @@
 from datetime import datetime, timedelta
+from typing import Annotated
 
 import jwt
-from fastapi import HTTPException, status
+from fastapi import Depends, HTTPException, status
 from jwt.exceptions import DecodeError, ExpiredSignatureError
 from pwdlib import PasswordHash
 from sqlmodel import select
 
+from src.database.session import T_Session
 from src.models.users import User
 from src.settings import Settings
-from src.types import T_Session, Token
+from src.types import Token
 
 pwd_context = PasswordHash.recommended()
 
@@ -65,3 +67,6 @@ def get_current_user(token: Token, session: T_Session):
         raise credentials_exception
 
     return user
+
+
+CurrentUser = Annotated[User, Depends(get_current_user)]
