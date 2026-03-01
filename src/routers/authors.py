@@ -19,7 +19,7 @@ post_description = """
 """
 
 
-@router.post('/', response_model=AuthorOut, description=post_description)
+@router.post('/', response_model=AuthorOut, description=post_description, status_code=status.HTTP_201_CREATED)
 def create_author(author: AuthorIn, current_user: CurrentUser, session: T_Session):
     author = clean_author_data(author)
     _author = session.scalar(select(Author).where(Author.name == author.name))
@@ -38,7 +38,7 @@ def create_author(author: AuthorIn, current_user: CurrentUser, session: T_Sessio
     return author_db
 
 
-@router.get('/{author_id}', response_model=AuthorOut)
+@router.get('/{author_id}', response_model=AuthorOut, status_code=status.HTTP_200_OK)
 def read_author(
     author_id: T_PositiveInt, current_user: CurrentUser, session: T_Session
 ):
@@ -50,13 +50,13 @@ def read_author(
     return author
 
 
-@router.get('/', response_model=AuthorsList)
+@router.get('/', response_model=AuthorsList, status_code=status.HTTP_200_OK)
 def read_authors(current_user: CurrentUser, session: T_Session):
     authors = session.scalars(select(Author))
     return {'authors': authors}
 
 
-@router.put('/{author_id}', response_model=AuthorOut)
+@router.put('/{author_id}', response_model=AuthorOut, status_code=status.HTTP_200_OK)
 def update_author(
     author: AuthorIn,
     author_id: T_PositiveInt,
@@ -93,7 +93,7 @@ def update_author(
     return _author
 
 
-@router.delete('/{author_id}')
+@router.delete('/{author_id}', status_code=status.HTTP_200_OK)
 def delete_author(
     author_id: T_PositiveInt, current_user: CurrentUser, session: T_Session
 ):

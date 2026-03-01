@@ -75,14 +75,14 @@ def read_user(user_id: T_PositiveInt, session: T_Session, current_user: CurrentU
     return user_db
 
 
-@router.get('/', response_model=UserList)
+@router.get('/', response_model=UserList, status_code=status.HTTP_200_OK)
 def read_users(session: T_Session, current_user: CurrentUser):
     users_list = session.scalars(select(User))
 
     return {'users': users_list}
 
 
-@router.put('/{user_id}', response_model=UserOut, description=put_description)
+@router.put('/{user_id}', response_model=UserOut, description=put_description, status_code=status.HTTP_200_OK)
 def update_user(
     user_id: T_PositiveInt, user: UserIn, session: T_Session, current_user: CurrentUser
 ):
