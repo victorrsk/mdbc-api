@@ -10,7 +10,18 @@ from src.types import OAuthForm
 router = APIRouter(prefix='/auth', tags=['auth'])
 
 
-@router.post('/token', response_model=TokenSchema, status_code=status.HTTP_200_OK)
+auth_description = """
+## About authentication:
+
+- ### The authentication flow uses the user email and password to generate a token (JWT)
+    - ### Altought the auth form asks for the `username` the logic behind the auth flow uses the user email, otherwise you'll do not get authenticated
+- ### The JWT have a 60 minutes expire time
+- ### The claims used in the JWT are:
+    1. `sub` - the user email
+    2. `exp` - the expire time
+"""
+
+@router.post('/token', response_model=TokenSchema, description=auth_description, status_code=status.HTTP_200_OK)
 def login_for_access_token(form_data: OAuthForm, session: T_Session):
     user_db = session.scalar(select(User).where(User.email == form_data.username))
     if not user_db:

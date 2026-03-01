@@ -13,8 +13,28 @@ router = APIRouter(prefix='/users', tags=['users'])
 
 # read search_user() definition for its behavior explanation
 
+post_description = """
+## About user data sanitization:
 
-@router.post('/', response_model=UserOut, status_code=status.HTTP_201_CREATED)
+- ### The username will be converted to lowercase, the blank spaces around the name gotta be removed and the ones between the username will be replaced by a "-"
+- ### The email will have all the blank spaces removed (there isn't a real strong email validation, only the `Emailstr` type from pydantic)
+- ### The password will have all the blank spaces removed (password gonna be hashed)
+"""
+
+put_description = """
+## About the `put` method:
+
+- You can only update (perform a `put` request) yourself.
+- Every other `user_id` inserted will be treated with `403, Forbidden`
+"""
+
+delete_description = """
+## About the `delete` method:
+
+- You can only delete (perform a `delete` request) yourself
+"""
+
+@router.post('/', response_model=UserOut, description=post_description, status_code=status.HTTP_201_CREATED)
 def create_user(user: UserIn, session: T_Session):
     user = clean_user_data(user)
     user.password = get_pwd_hash(user.password)
@@ -54,7 +74,7 @@ def read_users(session: T_Session, current_user: CurrentUser):
     return {'users': users_list}
 
 
-@router.put('/{user_id}', response_model=UserOut)
+@router.put('/{user_id}', response_model=UserOut, description=put_description)
 def update_user(
     user_id: T_PositiveInt, user: UserIn, session: T_Session, current_user: CurrentUser
 ):
@@ -90,7 +110,7 @@ def update_user(
     return user_db
 
 
-@router.delete('/{user_id}', status_code=status.HTTP_200_OK)
+@router.delete('/{user_id}', description=delete_description, status_code=status.HTTP_200_OK)
 def delete_user(user_id: T_PositiveInt, session: T_Session, current_user: CurrentUser):
     if user_id != current_user.id:
         raise HTTPException(

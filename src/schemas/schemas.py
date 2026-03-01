@@ -31,3 +31,7 @@ class AuthorIn(BaseModel):
 class AuthorOut(AuthorIn):
     id: int
     created_by_id: int
+
+
+class AuthorsList(BaseModel):
+    authors: list[AuthorOut]

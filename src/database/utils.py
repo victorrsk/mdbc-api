@@ -1,4 +1,4 @@
-from src.schemas.schemas import UserIn
+from src.schemas.schemas import UserIn, AuthorIn
 from fastapi import HTTPException, status
 from src.database.session import T_Session
 from src.models.users import User
@@ -6,11 +6,16 @@ from src.models.users import User
 from sqlmodel import select
 
 def clean_user_data(user: UserIn):
-    user.username = user.username.lower().replace(' ', '')
+    user.username = user.username.lower().strip().replace(' ', '-')
     user.email = user.email.replace(' ', '')
     user.password = user.password.replace(' ', '')
 
     return user
+
+def clean_author_data(author: AuthorIn):
+    author.name = author.name.lower().strip().replace(' ', '-')
+
+    return author
 
 
 def search_user(id: int, session: T_Session):
