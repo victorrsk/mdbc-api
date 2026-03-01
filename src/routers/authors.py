@@ -14,7 +14,8 @@ router = APIRouter(prefix='/authors', tags=['authors'])
 post_description = """
 ## About author data sanitization
 
-- ### All the blank spaces around the author name gotta be removed and all the ones between the author name will be replaced by a "-"
+- ### All the blank spaces around the author name gotta be removed and all the ones
+    ### between the author name will be replaced by a "-"
 """
 
 @router.post('/', response_model=AuthorOut, description=post_description)
@@ -53,6 +54,36 @@ def read_authors(current_user: CurrentUser, session: T_Session):
     authors = session.scalars(select(Author))
     return {'authors': authors}
 
+
+@router.put('/{author_id}', response_model=AuthorOut)
+def update_author(author: AuthorIn, author_id: T_PositiveInt, current_user: CurrentUser, session: T_Session):
+    author = clean_author_data(author)
+
+    _author = session.scalar(select(Author).where(Author.id == author_id))
+    if not _author:
+        raise HTTPException(
+            detail='not enough permission', status_code=status.HTTP_403_FORBIDDEN
+        )
+    if _author.created_by_id != current_user.id:
+        raise HTTPException(
+            detail='not enough permission', status_code=status.HTTP_403_FORBIDDEN
+        )
+
+    auth_exists = session.scalar(select(Author).where(Author.name == author.name).where(Author.id != author_id))
+
+    if auth_exists:
+        raise HTTPException(
+            detail='author already exists',
+            status_code=status.HTTP_409_CONFLICT
+        )
+
+    _author.name = author.name
+
+    session.add(_author)
+    session.commit()
+    session.refresh(_author)
+
+    return _author
 
 @router.delete('/{author_id}')
 def delete_author(
