@@ -14,7 +14,7 @@ auth_description = """
 ## About authentication:
 
 - ### The authentication flow uses the user email and password to generate a token (JWT)
-    - ### Altought the auth form asks for the `username` the logic behind the auth flow 
+    - ### Altought the auth form asks for the `username` the logic behind the auth flow
         ### uses the user email, otherwise you'll do not get authenticated
 - ### The JWT have a 60 minutes expire time
 - ### The claims used in the JWT are:

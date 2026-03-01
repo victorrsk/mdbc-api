@@ -18,6 +18,7 @@ post_description = """
     ### between the author name will be replaced by a "-"
 """
 
+
 @router.post('/', response_model=AuthorOut, description=post_description)
 def create_author(author: AuthorIn, current_user: CurrentUser, session: T_Session):
     author = clean_author_data(author)
@@ -56,7 +57,12 @@ def read_authors(current_user: CurrentUser, session: T_Session):
 
 
 @router.put('/{author_id}', response_model=AuthorOut)
-def update_author(author: AuthorIn, author_id: T_PositiveInt, current_user: CurrentUser, session: T_Session):
+def update_author(
+    author: AuthorIn,
+    author_id: T_PositiveInt,
+    current_user: CurrentUser,
+    session: T_Session,
+):
     author = clean_author_data(author)
 
     _author = session.scalar(select(Author).where(Author.id == author_id))
@@ -69,12 +75,13 @@ def update_author(author: AuthorIn, author_id: T_PositiveInt, current_user: Curr
             detail='not enough permission', status_code=status.HTTP_403_FORBIDDEN
         )
 
-    auth_exists = session.scalar(select(Author).where(Author.name == author.name).where(Author.id != author_id))
+    auth_exists = session.scalar(
+        select(Author).where((Author.name == author.name) & (Author.id != author_id))
+    )
 
     if auth_exists:
         raise HTTPException(
-            detail='author already exists',
-            status_code=status.HTTP_409_CONFLICT
+            detail='author already exists', status_code=status.HTTP_409_CONFLICT
         )
 
     _author.name = author.name
@@ -84,6 +91,7 @@ def update_author(author: AuthorIn, author_id: T_PositiveInt, current_user: Curr
     session.refresh(_author)
 
     return _author
+
 
 @router.delete('/{author_id}')
 def delete_author(

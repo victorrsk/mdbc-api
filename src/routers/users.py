@@ -18,7 +18,7 @@ post_description = """
 
 - ### The username will be converted to lowercase, the blank spaces around the name
     ### gotta be removed and the ones between the username will be replaced by a "-"
-- ### The email will have all the blank spaces removed (there isn't a real strong 
+- ### The email will have all the blank spaces removed (there isn't a real strong
     ### email validation, only the `Emailstr` type from pydantic)
 - ### The password will have all the blank spaces removed (password gonna be hashed)
 """
