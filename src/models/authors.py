@@ -15,4 +15,4 @@ class Author(SQLModel, table=True):
     books: list['Book'] = Relationship(back_populates='author', cascade_delete=True)
     user: 'User' = Relationship(back_populates='authors')
 
-    model_config = {'extra': 'ignore'}
+    model_config = {'extra': 'allow'}

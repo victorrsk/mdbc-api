@@ -15,4 +15,4 @@ class User(SQLModel, table=True):
     authors: list['Author'] = Relationship(cascade_delete=True, back_populates='user')
 
     # used to allow extra attributes in tests
-    model_config = {'extra': 'ignore'}
+    model_config = {'extra': 'allow'}

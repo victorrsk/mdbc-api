@@ -18,12 +18,13 @@ dev = [
     "pytest>=9.0.2",
     "pytest-cov>=7.0.0",
     "ruff>=0.15.0",
+    "sqlacodegen>=4.0.1",
     "taskipy>=1.14.1",
 ]
 
 [tool.ruff]
 line-length = 88
-extend-exclude = ['migrations', 'database']
+extend-exclude = ['migrations', 'database', 'alembic']
 
 [tool.ruff.lint]
 preview = true

@@ -1,4 +1,4 @@
-from src.schemas.schemas import UserIn, AuthorIn
+from src.schemas.schemas import UserIn, AuthorIn, BookIn
 from fastapi import HTTPException, status
 from src.database.session import T_Session
 from src.models.users import User
@@ -16,6 +16,11 @@ def clean_author_data(author: AuthorIn):
     author.name = author.name.lower().strip().replace(' ', '-')
 
     return author
+
+def clean_book_data(book: BookIn):
+    book.title = book.title.lower().strip().replace(' ', '-')
+
+    return book
 
 
 def search_user(id: int, session: T_Session):
