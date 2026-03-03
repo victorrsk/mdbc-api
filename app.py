@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from src.routers import auth, authors, users
+from src.routers import auth, authors, books, users
 
 app_description = """
 ## An experimental REST API
@@ -19,6 +19,7 @@ app = FastAPI(title='My Digital Books Collection API', description=app_descripti
 app.include_router(users.router)
 app.include_router(auth.router)
 app.include_router(authors.router)
+app.include_router(books.router)
 
 
 @app.get('/')
