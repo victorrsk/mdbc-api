@@ -12,14 +12,31 @@ router = APIRouter(prefix='/authors', tags=['authors'])
 
 
 post_description = """
-## About author data sanitization
+## About author data sanitization:
 
-- ### All the blank spaces around the author name gotta be removed and all the ones
+- ### All the blank spaces around the author name gonna be removed and all the ones
     ### between the author name will be replaced by a "-"
 """
 
+put_description = """
+## About the `put` method in authors:
 
-@router.post('/', response_model=AuthorOut, description=post_description, status_code=status.HTTP_201_CREATED)
+- ### You can only update an author created by you (the current authenticated user)
+"""
+
+delete_description = """
+## About the `delete` method in authors:
+
+- ### You can only delete an author created by you (the current authenticated user)
+"""
+
+
+@router.post(
+    '/',
+    response_model=AuthorOut,
+    description=post_description,
+    status_code=status.HTTP_201_CREATED,
+)
 def create_author(author: AuthorIn, current_user: CurrentUser, session: T_Session):
     author = clean_author_data(author)
     _author = session.scalar(select(Author).where(Author.name == author.name))
@@ -33,7 +50,7 @@ def create_author(author: AuthorIn, current_user: CurrentUser, session: T_Sessio
     session.add(author_db)
     session.commit()
     session.refresh(author_db)
-    author_db.crator_name = current_user.username
+    author_db.creator_name = current_user.username
 
     return author_db
 
@@ -56,7 +73,12 @@ def read_authors(current_user: CurrentUser, session: T_Session):
     return {'authors': authors}
 
 
-@router.put('/{author_id}', response_model=AuthorOut, status_code=status.HTTP_200_OK)
+@router.put(
+    '/{author_id}',
+    response_model=AuthorOut,
+    description=put_description,
+    status_code=status.HTTP_200_OK,
+)
 def update_author(
     author: AuthorIn,
     author_id: T_PositiveInt,
@@ -93,7 +115,9 @@ def update_author(
     return _author
 
 
-@router.delete('/{author_id}', status_code=status.HTTP_200_OK)
+@router.delete(
+    '/{author_id}', description=delete_description, status_code=status.HTTP_200_OK
+)
 def delete_author(
     author_id: T_PositiveInt, current_user: CurrentUser, session: T_Session
 ):
