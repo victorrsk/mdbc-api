@@ -27,7 +27,7 @@ class TokenSchema(BaseModel):
 
 
 class AuthorIn(BaseModel):
-    name: str
+    name: str = Field(examples=['Aditya Bhargava'])
 
 
 class AuthorOut(AuthorIn):
@@ -58,3 +58,22 @@ class BookGenres(str, Enum):
     BIOGRAPHY = 'biography'
     ADVENTURE = 'adventure'
     SUSPENSE = 'suspense'
+
+
+class BookSchema(BaseModel):
+    title: str = Field(examples=['Grokking Algorithms'])
+    year: int = Field(ge=0, examples=[2016])
+    author_id: int = Field(gt=0)
+    genre: BookGenres = Field(examples=[BookGenres.TECHNOLOGY])
+
+
+class BookIn(BookSchema):
+    pass
+
+
+class BookOut(BookSchema):
+    id: int
+
+
+class BookList(BaseModel):
+    books: list[BookOut]
