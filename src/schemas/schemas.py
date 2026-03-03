@@ -1,3 +1,5 @@
+from enum import Enum
+
 from pydantic import BaseModel, EmailStr, Field
 
 
@@ -35,3 +37,24 @@ class AuthorOut(AuthorIn):
 
 class AuthorsList(BaseModel):
     authors: list[AuthorOut]
+
+
+class BookGenres(str, Enum):
+    FANTASY = 'fantasy'
+    ROMANCE = 'romance'
+    PHILOSOPHY = 'philosopy'
+    TERROR = 'terror'
+    HORROR = 'horror'
+    COMEDY = 'comedy'
+    SOCIOLOGY = 'sociology'
+    SCIFI = 'scifi'
+    TECHNOLOGY = 'technology'
+    PHYSICS = 'physics'
+    MATH = 'math'
+    CHEMESTRY = 'chemestry'
+    POETRY = 'poetry'
+    DRAMA = 'drama'
+    MISTERY = 'mistery'
+    BIOGRAPHY = 'biography'
+    ADVENTURE = 'adventure'
+    SUSPENSE = 'suspense'
