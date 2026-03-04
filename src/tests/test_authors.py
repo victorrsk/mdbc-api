@@ -16,7 +16,9 @@ def test_create_author(user, client, token):
 
 def test_create_author_already_exists(client, token, author):
     response = client.post(
-        '/authors', json={'name': 'test'}, headers={'Authorization': f'Bearer {token}'}
+        '/authors',
+        json={'name': author.name},
+        headers={'Authorization': f'Bearer {token}'},
     )
 
     assert response.json() == {'detail': 'author already exists'}

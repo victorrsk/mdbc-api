@@ -26,9 +26,9 @@ def test_create_user_username_in_use(client, user):
     response = client.post(
         '/users',
         json={
-            'username': 'test',
-            'email': 'otheremail@email.com',
-            'password': 'password123',
+            'username': user.username,
+            'email': user.email,
+            'password': user.clean_pwd,
         },
     )
 
@@ -39,9 +39,9 @@ def test_create_user_email_in_use(client, user):
     response = client.post(
         '/users',
         json={
-            'username': 'other_test',
-            'email': 'testemail@email.com',
-            'password': 'password123',
+            'username': user.username,
+            'email': user.email,
+            'password': user.clean_pwd,
         },
     )
 
@@ -119,7 +119,7 @@ def test_update_user(client, user, token):
     )
 
     assert response.json() == {
-        'id': 1,
+        'id': user.id,
         'username': 'newname',
         'email': 'newemail@email.com',
     }

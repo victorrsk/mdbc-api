@@ -1,4 +1,6 @@
 import pytest
+from factory.base import Factory
+from factory.declarations import LazyAttribute, Sequence
 from fastapi.testclient import TestClient
 from sqlmodel import Session, StaticPool, create_engine
 
@@ -7,6 +9,26 @@ from src.database.session import SQLModel, get_session
 from src.models.authors import Author
 from src.models.users import User
 from src.security import get_pwd_hash
+
+# tests factories --------------------------------------------------------
+
+
+class RandomUser(Factory):
+    class Meta:
+        model = User
+
+    username = Sequence(lambda num: f'test{num}')
+    email = LazyAttribute(lambda obj: f'{obj.username}@email.com')
+    password = LazyAttribute(lambda obj: f'{obj.username}_password')
+
+
+class RandomAuthor(Factory):
+    class Meta:
+        model = Author
+
+    name = Sequence(lambda num: f'author{num}')
+    # hard coded
+    created_by_id = 1
 
 
 @pytest.fixture
@@ -47,13 +69,10 @@ def client(session):
 
 @pytest.fixture
 def user(session):
-    clean_pwd = 'password123'
-    _user = User(
-        id=None,
-        username='test',
-        email='testemail@email.com',
-        password=get_pwd_hash(clean_pwd),
-    )
+    # creates a user with mocked/fake data from factory
+    _user = RandomUser()
+    clean_pwd = _user.password
+    _user.password = get_pwd_hash(clean_pwd)
 
     session.add(_user)
     session.commit()
@@ -77,7 +96,7 @@ def token(client, user):
 
 @pytest.fixture
 def author(user, session):
-    _author = Author(id=None, name='test', created_by_id=user.id)
+    _author = RandomAuthor()
 
     session.add(_author)
     session.commit()
