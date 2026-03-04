@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 
 from src.routers import auth, authors, books, users
 
@@ -24,4 +25,4 @@ app.include_router(books.router)
 
 @app.get('/')
 def read_root():
-    return {'message': 'hello world'}
+    return JSONResponse({'message': 'hello world!'}, status_code=200)
