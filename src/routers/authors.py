@@ -1,8 +1,13 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, status
 from sqlmodel import select
 
 from src.database.session import T_Session
 from src.database.utils import clean_author_data
+from src.exceptions import (
+    EntityAlreadyExistsConflict,
+    EntityNotFound,
+    NotEnoughPermission,
+)
 from src.models.authors import Author
 from src.schemas.schemas import AuthorIn, AuthorOut, AuthorsList
 from src.security import CurrentUser
@@ -41,9 +46,7 @@ def create_author(author: AuthorIn, current_user: CurrentUser, session: T_Sessio
     author = clean_author_data(author)
     _author = session.scalar(select(Author).where(Author.name == author.name))
     if _author:
-        raise HTTPException(
-            detail='author already exists', status_code=status.HTTP_409_CONFLICT
-        )
+        raise EntityAlreadyExistsConflict(entity='author')
 
     author_db = Author(id=None, created_by_id=current_user.id, name=author.name)
 
@@ -61,9 +64,7 @@ def read_author(
 ):
     author = session.scalar(select(Author).where(Author.id == author_id))
     if not author:
-        raise HTTPException(
-            detail='author not found', status_code=status.HTTP_404_NOT_FOUND
-        )
+        raise EntityNotFound('author')
     return author
 
 
@@ -89,22 +90,16 @@ def update_author(
 
     _author = session.scalar(select(Author).where(Author.id == author_id))
     if not _author:
-        raise HTTPException(
-            detail='not enough permission', status_code=status.HTTP_403_FORBIDDEN
-        )
+        raise NotEnoughPermission()
     if _author.created_by_id != current_user.id:
-        raise HTTPException(
-            detail='not enough permission', status_code=status.HTTP_403_FORBIDDEN
-        )
+        raise NotEnoughPermission()
 
     auth_exists = session.scalar(
         select(Author).where((Author.name == author.name) & (Author.id != author_id))
     )
 
     if auth_exists:
-        raise HTTPException(
-            detail='author already exists', status_code=status.HTTP_409_CONFLICT
-        )
+        raise EntityAlreadyExistsConflict(entity='author')
 
     _author.name = author.name
 
@@ -125,13 +120,9 @@ def delete_author(
     query = select(Author).where(Author.id == author_id)
     _author = session.scalar(query)
     if not _author:
-        raise HTTPException(
-            detail='not enough permission', status_code=status.HTTP_403_FORBIDDEN
-        )
+        raise NotEnoughPermission()
     if _author.created_by_id != current_user.id:
-        raise HTTPException(
-            detail='not enough permission', status_code=status.HTTP_403_FORBIDDEN
-        )
+        raise NotEnoughPermission()
 
     session.delete(_author)
     session.commit()

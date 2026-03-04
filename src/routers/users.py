@@ -2,7 +2,8 @@ from fastapi import APIRouter, HTTPException, status
 from sqlmodel import select
 
 from src.database.session import T_Session
-from src.database.utils import clean_user_data, search_user
+from src.database.utils import clean_user_data
+from src.exceptions import EntityNotFound, NotEnoughPermission, UserDataInUse
 from src.models.users import User
 from src.schemas.schemas import UserIn, UserList, UserOut
 from src.security import CurrentUser, get_pwd_hash
@@ -11,7 +12,6 @@ from src.types import T_PositiveInt
 # api router for /users endpoints
 router = APIRouter(prefix='/users', tags=['users'])
 
-# read search_user() definition for its behavior explanation
 
 post_description = """
 ## About user data sanitization:
@@ -56,10 +56,8 @@ def create_user(user: UserIn, session: T_Session):
         )
     )
     if result:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail='username or email already in use',
-        )
+        raise UserDataInUse()
+
     session.add(user_db)
     session.commit()
     session.refresh(user_db)
@@ -69,9 +67,10 @@ def create_user(user: UserIn, session: T_Session):
 
 @router.get('/{user_id}', response_model=UserOut, status_code=status.HTTP_200_OK)
 def read_user(user_id: T_PositiveInt, session: T_Session, current_user: CurrentUser):
-    # raises 404 if user not found
-    user_db = search_user(id=user_id, session=session)
-    # if the user exists then return
+    user_db = session.scalar(select(User).where(User.id == user_id))
+    if not user_db:
+        raise EntityNotFound(entity='user')
+
     return user_db
 
 
@@ -98,7 +97,9 @@ def update_user(
     user = clean_user_data(user)
     user.password = get_pwd_hash(user.password)
 
-    user_db = search_user(id=user_id, session=session)
+    user_db = session.scalar(select(User).where(User.id == user_id))
+    if not user_db:
+        raise EntityNotFound('user')
     # verifies if other user uses the same email or username
     test_user = session.scalar(
         select(User).where(
@@ -107,10 +108,7 @@ def update_user(
         )
     )
     if test_user:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail='username or email already in use',
-        )
+        raise UserDataInUse()
     # overrides the actual user data with the received from the api
     user_db.username = user.username
     user_db.email = user.email
@@ -128,10 +126,10 @@ def update_user(
 )
 def delete_user(user_id: T_PositiveInt, session: T_Session, current_user: CurrentUser):
     if user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail='not enough permission'
-        )
-    user_db = search_user(id=user_id, session=session)
+        raise NotEnoughPermission()
+    user_db = session.scalar(select(User).where(User.id == user_id))
+    if not user_db:
+        raise EntityNotFound('user')
     session.delete(user_db)
     session.commit()
 
