@@ -94,6 +94,9 @@ def read_users(session: T_Session, current_user: CurrentUser):
 def update_user(
     user_id: T_PositiveInt, user: UserIn, session: T_Session, current_user: CurrentUser
 ):
+    user_db = session.scalar(select(User).where(User.id == user_id))
+    if not user_db:
+        raise NotEnoughPermission()
     if user_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail='not enough permission'
@@ -101,9 +104,6 @@ def update_user(
     user = clean_user_data(user)
     user.password = get_pwd_hash(user.password)
 
-    user_db = session.scalar(select(User).where(User.id == user_id))
-    if not user_db:
-        raise EntityNotFound('user')
     # verifies if other user uses the same email or username
     test_user = session.scalar(
         select(User).where(
@@ -129,11 +129,11 @@ def update_user(
     '/{user_id}', description=delete_description, status_code=status.HTTP_200_OK
 )
 def delete_user(user_id: T_PositiveInt, session: T_Session, current_user: CurrentUser):
-    if user_id != current_user.id:
-        raise NotEnoughPermission()
     user_db = session.scalar(select(User).where(User.id == user_id))
     if not user_db:
         raise EntityNotFound('user')
+    if user_id != current_user.id:
+        raise NotEnoughPermission()
     session.delete(user_db)
     session.commit()
 
