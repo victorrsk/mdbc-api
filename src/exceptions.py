@@ -1,42 +1,53 @@
 from typing import Literal
 
-from fastapi import HTTPException
+from fastapi import Request
 from fastapi import status as st
+from fastapi.responses import JSONResponse
 
 
-class UserDataInUse(HTTPException):
+class UserDataInUse(Exception):
     def __init__(self):
-        super().__init__(
-            status_code=st.HTTP_409_CONFLICT, detail='username or email already in use'
-        )
+        pass
 
 
-class EntityAlreadyExistsConflict(HTTPException):
-    def __init__(
-        self,
-        entity: Literal['author', 'book'],
-    ):
-        if entity == 'author':
-            detail = 'author already exists'
-        elif entity == 'book':
-            detail = 'book already exists'
-
-        super().__init__(status_code=st.HTTP_409_CONFLICT, detail=detail)
+def user_data_in_use_handler(exc: UserDataInUse, req: Request):
+    return JSONResponse(
+        status_code=st.HTTP_409_CONFLICT,
+        content={'detail': 'username or email already in use'},
+    )
 
 
-class EntityNotFound(HTTPException):
+class EntityAlreadyExistsConflict(Exception):
+    def __init__(self, entity: Literal['author', 'book']):
+        self.entity = entity
+
+
+def entity_already_exists_conflict_handler(
+    req: Request, exc: EntityAlreadyExistsConflict
+):
+    return JSONResponse(
+        status_code=st.HTTP_409_CONFLICT,
+        content={'detail': f'{exc.entity} already exists'},
+    )
+
+
+class EntityNotFound(Exception):
     def __init__(self, entity: Literal['author', 'book', 'user']):
-        if entity == 'user':
-            detail = 'user not found'
-        elif entity == 'author':
-            detail = 'author not found'
-        elif entity == 'book':
-            detail = 'book not found'
-        super().__init__(status_code=st.HTTP_404_NOT_FOUND, detail=detail)
+        self.entity = entity
 
 
-class NotEnoughPermission(HTTPException):
+def entity_not_found_handler(req: Request, exc: EntityNotFound):
+    return JSONResponse(
+        status_code=st.HTTP_404_NOT_FOUND, content={'detail': f'{exc.entity} not found'}
+    )
+
+
+class NotEnoughPermission(Exception):
     def __init__(self):
-        super().__init__(
-            status_code=st.HTTP_403_FORBIDDEN, detail='not enough permission'
-        )
+        pass
+
+
+def not_enough_permission_handler(req: Request, exc: NotEnoughPermission):
+    return JSONResponse(
+        status_code=st.HTTP_403_FORBIDDEN, content={'detail': 'not enough permission'}
+    )
