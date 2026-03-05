@@ -1,4 +1,5 @@
 import pytest
+from factory import faker, fuzzy
 from factory.base import Factory
 from factory.declarations import LazyAttribute, Sequence
 from fastapi.testclient import TestClient
@@ -7,7 +8,9 @@ from sqlmodel import Session, StaticPool, create_engine
 from app import app
 from src.database.session import SQLModel, get_session
 from src.models.authors import Author
+from src.models.books import Book
 from src.models.users import User
+from src.schemas.schemas import BookGenres
 from src.security import get_pwd_hash
 
 # tests factories --------------------------------------------------------
@@ -28,7 +31,21 @@ class RandomAuthor(Factory):
 
     name = Sequence(lambda num: f'author{num}')
     # hard coded
-    created_by_id = 1
+    creator_id = 1
+    creator_name = 'test0'
+
+
+class RandomBook(Factory):
+    class Meta:
+        model = Book
+
+    title = Sequence(lambda num: f'book{num}')
+    year = faker.Faker('pyint', min_value=0, max_value=2000)
+    genre = fuzzy.FuzzyChoice(BookGenres)
+    # hard coded
+    author_id = 1
+    creator_id = 1
+    creator_name = 'test0'
 
 
 @pytest.fixture
@@ -103,3 +120,14 @@ def author(user, session):
     session.refresh(_author)
 
     return _author
+
+
+@pytest.fixture
+def book(session, author, user):
+    _book = RandomBook()
+
+    session.add(_book)
+    session.commit()
+    session.refresh(_book)
+
+    return _book

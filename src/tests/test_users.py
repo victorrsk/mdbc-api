@@ -177,6 +177,15 @@ def test_update_user_email_in_use(client, user, token):
 # even if the user with id 2 doesn't exist the code will raise 403 forbbiden
 # not 404 not found
 def test_update_other_user(client, token):
+    client.post(
+        '/users',
+        json={
+            'username': 'test1',
+            'email': 'email@email.com',
+            'password': 'password123',
+        },
+    )
+
     response = client.put(
         '/users/2',
         json={
@@ -198,6 +207,21 @@ def test_update_user_not_authenticated(client):
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
+def test_update_non_existent_user(client, token):
+    response = client.put(
+        '/users/4',
+        json={
+            'username': 'test@email.com',
+            'email': 'test@email.com',
+            'password': 'mysecret123',
+        },
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.json() == {'detail': 'not enough permission'}
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
 def test_delete_user(client, user, token):
     response = client.delete(
         f'/users/{user.id}', headers={'Authorization': f'Bearer {token}'}
@@ -207,7 +231,23 @@ def test_delete_user(client, user, token):
     assert response.status_code == status.HTTP_200_OK
 
 
+def test_delete_user_not_found(client, token):
+    response = client.delete('/users/2', headers={'Authorization': f'Bearer {token}'})
+
+    assert response.json() == {'detail': 'user not found'}
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
 def test_delete_other_user(client, token):
+    client.post(
+        '/users',
+        json={
+            'username': 'test1',
+            'email': 'email@email.com',
+            'password': 'password123',
+        },
+    )
+
     response = client.delete('/users/2', headers={'Authorization': f'Bearer {token}'})
 
     assert response.json() == {'detail': 'not enough permission'}
@@ -219,12 +259,3 @@ def test_delete_user_not_authenticated(client):
 
     assert response.json() == {'detail': 'Not authenticated'}
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
-
-
-# the code only raises 403 forbidden for other users id
-# even if the id doesn't exist it will raise 403
-# def test_delete_non_existent_user(client):
-#     response = client.delete('/users/2')
-#
-#     assert response.status_code == status.HTTP_404_NOT_FOUND
-#     assert response.json() == {'detail': 'user not found'}
