@@ -69,7 +69,7 @@ class BookSchema(BaseModel):
 
 
 class BookPatch(BaseModel):
-    title: str | None = Field(default=None, examples=['Grokking Algorithms'])
+    title: str | None = Field(default=None, examples=['Grokking Algorithms'], min_length=3)
     year: int | None = Field(ge=0, default=None, examples=[2016])
     author_id: int = Field(gt=0)
     genre: BookGenres | None = Field(default=None, examples=[BookGenres.TECHNOLOGY])
