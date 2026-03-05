@@ -9,7 +9,8 @@ from sqlmodel import Field, Relationship, SQLModel
 
 class Author(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
-    created_by_id: int = Field(foreign_key='user.id', ondelete='CASCADE')
+    creator_id: int = Field(nullable=False, foreign_key='user.id', ondelete='CASCADE')
+    creator_name: str = Field(nullable=False)
     name: str = Field(unique=True)
 
     books: list['Book'] = Relationship(back_populates='author', cascade_delete=True)
