@@ -10,7 +10,12 @@ def test_create_author(user, client, token):
         '/authors', json={'name': 'test'}, headers={'Authorization': f'Bearer {token}'}
     )
 
-    assert response.json() == {'name': 'test', 'id': 1, 'created_by_id': user.id}
+    assert response.json() == {
+        'name': 'test',
+        'id': 1,
+        'creator_id': user.id,
+        'creator_name': user.username,
+    }
     assert response.status_code == status.HTTP_201_CREATED
 
 
@@ -33,7 +38,8 @@ def test_read_author(client, author, token):
     assert response.json() == {
         'name': author.name,
         'id': author.id,
-        'created_by_id': author.created_by_id,
+        'creator_id': author.creator_id,
+        'creator_name': author.creator_name,
     }
     assert response.status_code == status.HTTP_200_OK
 
@@ -53,7 +59,8 @@ def test_read_authors(client, token, author):
             {
                 'name': author.name,
                 'id': author.id,
-                'created_by_id': author.created_by_id,
+                'creator_id': author.creator_id,
+                'creator_name': author.creator_name,
             }
         ]
     }
@@ -71,7 +78,8 @@ def test_update_author(client, author, token):
     assert response.json() == {
         'name': author.name,
         'id': author.id,
-        'created_by_id': author.created_by_id,
+        'creator_id': author.creator_id,
+        'creator_name': author.creator_name,
     }
 
     assert response.status_code == status.HTTP_200_OK
