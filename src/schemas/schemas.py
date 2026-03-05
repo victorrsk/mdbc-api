@@ -32,7 +32,8 @@ class AuthorIn(BaseModel):
 
 class AuthorOut(AuthorIn):
     id: int
-    created_by_id: int
+    creator_id: int
+    creator_name: str
 
 
 class AuthorsList(BaseModel):
@@ -67,12 +68,21 @@ class BookSchema(BaseModel):
     genre: BookGenres = Field(examples=[BookGenres.TECHNOLOGY])
 
 
+class BookPatch(BaseModel):
+    title: str | None = Field(default=None, examples=['Grokking Algorithms'])
+    year: int | None = Field(ge=0, default=None, examples=[2016])
+    author_id: int = Field(gt=0)
+    genre: BookGenres | None = Field(default=None, examples=[BookGenres.TECHNOLOGY])
+
+
 class BookIn(BookSchema):
     pass
 
 
 class BookOut(BookSchema):
     id: int
+    creator_id: int
+    creator_name: str
 
 
 class BookList(BaseModel):
