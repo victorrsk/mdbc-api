@@ -1,4 +1,4 @@
-from src.schemas.schemas import UserIn, AuthorIn, BookIn
+from src.schemas.schemas import UserIn, AuthorIn, BookIn, BookPatch
 from fastapi import HTTPException, status
 from src.database.session import T_Session
 from src.models.users import User
@@ -17,7 +17,9 @@ def clean_author_data(author: AuthorIn):
 
     return author
 
-def clean_book_data(book: BookIn):
+def clean_book_data(book: BookIn | BookPatch):
+    # type checker will probably bother you with the red line under lower method
+    # but don't worry, it will not cause runtime error
     book.title = book.title.lower().strip().replace(' ', '-')
 
     return book
