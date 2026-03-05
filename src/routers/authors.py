@@ -33,6 +33,7 @@ delete_description = """
 ## About the `delete` method in authors:
 
 - ### You can only delete an author created by you (the current authenticated user)
+- ### By deleting an author all the books related to its id will be deleted" too
 """
 
 
@@ -48,12 +49,16 @@ def create_author(author: AuthorIn, current_user: CurrentUser, session: T_Sessio
     if _author:
         raise EntityAlreadyExistsConflict(entity='author')
 
-    author_db = Author(id=None, created_by_id=current_user.id, name=author.name)
+    author_db = Author(
+        id=None,
+        creator_id=current_user.id,
+        creator_name=current_user.username,
+        name=author.name,
+    )
 
     session.add(author_db)
     session.commit()
     session.refresh(author_db)
-    author_db.creator_name = current_user.username
 
     return author_db
 
@@ -91,14 +96,14 @@ def update_author(
     _author = session.scalar(select(Author).where(Author.id == author_id))
     if not _author:
         raise NotEnoughPermission()
-    if _author.created_by_id != current_user.id:
+    if _author.creator_id != current_user.id:
         raise NotEnoughPermission()
 
-    auth_exists = session.scalar(
+    author_exists = session.scalar(
         select(Author).where((Author.name == author.name) & (Author.id != author_id))
     )
 
-    if auth_exists:
+    if author_exists:
         raise EntityAlreadyExistsConflict(entity='author')
 
     _author.name = author.name
@@ -121,7 +126,7 @@ def delete_author(
     _author = session.scalar(query)
     if not _author:
         raise NotEnoughPermission()
-    if _author.created_by_id != current_user.id:
+    if _author.creator_id != current_user.id:
         raise NotEnoughPermission()
 
     session.delete(_author)

@@ -34,6 +34,10 @@ delete_description = """
 ## About the `delete` method:
 
 - ### You can only delete (perform a `delete` request) yourself
+- ### By deleting yourself all the authors related to your id will be deleted (and the
+    ### books related to this author)
+- ### Even if you didn't created an author but created book(s), all the books related to
+    ### your id will be deleted
 """
 
 
