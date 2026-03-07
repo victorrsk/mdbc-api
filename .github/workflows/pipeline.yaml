@@ -3,6 +3,7 @@ run-name: ${{ github.actor }} started the CI script
 on: [push, pull_request]
 jobs:
   Setup-app-environment:
+    name: Setup environment for app test
     runs-on: ubuntu-latest
     steps:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
