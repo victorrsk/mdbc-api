@@ -11,5 +11,5 @@ jobs:
     steps:
       - name: logging
         run: echo "${{ github.actor }} performed a ${{ github.event_name }} at ${{ github.repository }}"
-        run: echo "${{ github.run_attempt }}"
+      - run: echo "${{ github.run_attempt }}"
 
