@@ -24,14 +24,11 @@ jobs:
       - name: installing dependencies
         run: uv sync --all-groups
 
-      - name: activating venv
-        run: source .venv/bin/activate
-
       - name: formatting
-        run: task format
+        run: uv run task format
   
       - name: testing app
-        run: task test
+        run: uv run task test
 
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
