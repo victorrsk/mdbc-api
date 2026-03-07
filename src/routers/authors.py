@@ -1,4 +1,6 @@
-from fastapi import APIRouter, status
+from typing import Annotated
+
+from fastapi import APIRouter, Query, status
 from sqlmodel import select
 
 from src.database.session import T_Session
@@ -9,12 +11,13 @@ from src.exceptions import (
     NotEnoughPermission,
 )
 from src.models.authors import Author
-from src.schemas.schemas import AuthorIn, AuthorOut, AuthorsList
+from src.schemas.schemas import AuthorFilter, AuthorIn, AuthorOut, AuthorsList
 from src.security import CurrentUser
 from src.types import T_PositiveInt
 
 router = APIRouter(prefix='/authors', tags=['authors'])
 
+T_AuthorFilter = Annotated[AuthorFilter, Query()]
 
 post_description = """
 ## About author data sanitization:
@@ -74,8 +77,17 @@ def read_author(
 
 
 @router.get('/', response_model=AuthorsList, status_code=status.HTTP_200_OK)
-def read_authors(current_user: CurrentUser, session: T_Session):
-    authors = session.scalars(select(Author))
+def read_authors(
+    current_user: CurrentUser, session: T_Session, author_filter: T_AuthorFilter
+):
+    query = select(Author)
+    if author_filter.author_name:
+        author_name = author_filter.author_name.strip().lower().replace(' ', '-')
+        query = query.filter(Author.name.contains(author_name))
+    if author_filter.creator_name:
+        creator_name = author_filter.creator_name.strip().lower().replace(' ', '-')
+        query = query.filter(Author.creator_name.contains(creator_name))
+    authors = session.scalars(query)
     return {'authors': authors}
 
 

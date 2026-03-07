@@ -1,4 +1,6 @@
-from fastapi import APIRouter, status
+from typing import Annotated
+
+from fastapi import APIRouter, Query, status
 from sqlmodel import select
 
 from src.database.session import T_Session
@@ -10,11 +12,13 @@ from src.exceptions import (
 )
 from src.models.authors import Author
 from src.models.books import Book
-from src.schemas.schemas import BookIn, BookList, BookOut, BookPatch
+from src.schemas.schemas import BookFilter, BookIn, BookList, BookOut, BookPatch
 from src.security import CurrentUser
 from src.types import T_PositiveInt
 
 router = APIRouter(prefix='/books', tags=['books'])
+
+T_BookFilter = Annotated[BookFilter, Query()]
 
 post_description = """
 ## About book creation:
@@ -87,8 +91,13 @@ def create_book(book: BookIn, session: T_Session, current_user: CurrentUser):
 
 
 @router.get('/', response_model=BookList, status_code=status.HTTP_200_OK)
-def read_books(session: T_Session):
-    books = session.scalars(select(Book))
+def read_books(session: T_Session, book_filter: T_BookFilter):
+    query = select(Book)
+    if book_filter.book_genre:
+        query = query.where(Book.genre == book_filter.book_genre)
+    if book_filter.book_name:
+        query = query.where(Book.title.contains(book_filter.book_name))
+    books = session.scalars(query)
 
     return {'books': books}
 

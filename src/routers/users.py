@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Request, status
 from sqlmodel import select
 
 from src.database.session import T_Session
@@ -47,7 +47,8 @@ delete_description = """
     description=post_description,
     status_code=status.HTTP_201_CREATED,
 )
-def create_user(user: UserIn, session: T_Session):
+def create_user(req: Request, user: UserIn, session: T_Session):
+    print(f'{req.url}|{req.client.port}|{req.method}')
     user = clean_user_data(user)
     user.password = get_pwd_hash(user.password)
     user_db = User(

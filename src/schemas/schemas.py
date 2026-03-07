@@ -69,7 +69,9 @@ class BookSchema(BaseModel):
 
 
 class BookPatch(BaseModel):
-    title: str | None = Field(default=None, examples=['Grokking Algorithms'], min_length=3)
+    title: str | None = Field(
+        default=None, examples=['Grokking Algorithms'], min_length=3
+    )
     year: int | None = Field(ge=0, default=None, examples=[2016])
     author_id: int = Field(gt=0)
     genre: BookGenres | None = Field(default=None, examples=[BookGenres.TECHNOLOGY])
@@ -87,3 +89,28 @@ class BookOut(BookSchema):
 
 class BookList(BaseModel):
     books: list[BookOut]
+
+
+class Filter(BaseModel):
+    offset: int = 0
+    limit: int = 10
+
+
+class AuthorFilter(Filter):
+    author_name: str | None = Field(
+        min_length=1, default=None, description='**search an author by his name**'
+    )
+    creator_name: str | None = Field(
+        default=None,
+        min_length=1,
+        description='**search an author by his creator name**',
+    )
+
+
+class BookFilter(Filter):
+    book_genre: BookGenres | None = Field(
+        default=None, description='**search an book based on its genre**'
+    )
+    book_name: str | None = Field(
+        default=None, min_length=1, description='**search an book by its name**'
+    )
