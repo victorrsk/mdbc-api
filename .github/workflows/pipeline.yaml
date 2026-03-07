@@ -24,6 +24,9 @@ jobs:
       - name: installing dependencies
         run: uv sync --all-groups
 
+      - name: activating venv
+        run: source .venv/scripts/activate
+
       - name: formatting
         run: task format
   
