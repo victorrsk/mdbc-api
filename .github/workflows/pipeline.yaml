@@ -25,7 +25,7 @@ jobs:
         run: uv sync --all-groups
 
       - name: activating venv
-        run: source .venv/scripts/activate
+        run: source .venv/scripts/activate || source .venv/bin/activate
 
       - name: formatting
         run: task format
