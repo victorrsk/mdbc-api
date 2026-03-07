@@ -31,7 +31,7 @@ jobs:
         run: task test
 
     env:
-      - DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      - TOKEN_MINUTES_EXPIRE_TIME: ${{ secrets.TOKEN_MINUTES_EXPIRE_TIME }}
-      - TOKEN_ALGORITHM: ${{ secrets.TOKEN_ALGORITHM }}
-      - SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      TOKEN_MINUTES_EXPIRE_TIME: ${{ secrets.TOKEN_MINUTES_EXPIRE_TIME }}
+      TOKEN_ALGORITHM: ${{ secrets.TOKEN_ALGORITHM }}
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
