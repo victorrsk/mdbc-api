@@ -43,7 +43,7 @@ class AuthorsList(BaseModel):
 class BookGenres(str, Enum):
     FANTASY = 'fantasy'
     ROMANCE = 'romance'
-    PHILOSOPHY = 'philosopy'
+    PHILOSOPHY = 'philosophy'
     TERROR = 'terror'
     HORROR = 'horror'
     COMEDY = 'comedy'
@@ -97,20 +97,17 @@ class Filter(BaseModel):
 
 
 class AuthorFilter(Filter):
-    author_name: str | None = Field(
-        min_length=1, default=None, description='**search an author by his name**'
-    )
-    creator_name: str | None = Field(
-        default=None,
-        min_length=1,
-        description='**search an author by his creator name**',
-    )
+    name: str | None = Field(default=None, description='**search an author by his name**')
+    creator_name: str | None = Field(default=None, description='**search an author by his creator name**',)
 
 
 class BookFilter(Filter):
-    book_genre: BookGenres | None = Field(
+    genre: BookGenres | None = Field(
         default=None, description='**search an book based on its genre**'
     )
-    book_name: str | None = Field(
-        default=None, min_length=1, description='**search an book by its name**'
+    title: str | None = Field(
+        default=None, description='**search an book by its name**'
+    )
+    creator_name: str | None = Field(
+        default=None, description='**search an book by its creator name**'
     )
