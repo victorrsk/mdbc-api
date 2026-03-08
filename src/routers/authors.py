@@ -26,6 +26,10 @@ post_description = """
     ### between the author name will be replaced by a "-"
 """
 
+get_description = """
+## Search for specific authors with these filters (they're all optional)
+"""
+
 put_description = """
 ## About the `put` method in authors:
 
@@ -77,17 +81,30 @@ def read_author(
 
 
 @router.get('/', response_model=AuthorsList, status_code=status.HTTP_200_OK)
-def read_authors(
-    current_user: CurrentUser, session: T_Session, author_filter: T_AuthorFilter
-):
+def read_authors(session: T_Session, author_filter: T_AuthorFilter):
+    """
+    if filters are received, then this for loop will build a query based on the values
+    received from the filter
+
+    - offset & limit are exluded because the cleanest way to add them is explicitly in
+    the final query
+
+    - if you have doubts about how the T_AuthorFilter is built, check the schemas file
+    (line 99)
+    """
     query = select(Author)
-    if author_filter.author_name:
-        author_name = author_filter.author_name.strip().lower().replace(' ', '-')
-        query = query.filter(Author.name.contains(author_name))
-    if author_filter.creator_name:
-        creator_name = author_filter.creator_name.strip().lower().replace(' ', '-')
-        query = query.filter(Author.creator_name.contains(creator_name))
-    authors = session.scalars(query)
+
+    for filter, value in author_filter.model_dump(
+        exclude_unset=True, exclude={'offset', 'limit'}
+    ).items():
+        clean_value = value.strip().lower().replace(' ', '-')
+        column = getattr(Author, filter)
+        query = query.filter(column.contains(clean_value))
+
+    authors = session.scalars(
+        query.offset(author_filter.offset).limit(author_filter.limit)
+    )
+
     return {'authors': authors}
 
 

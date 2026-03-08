@@ -37,6 +37,13 @@ post_description = """
     ### (i'm not considerind old books, like the ones thousands of years B.C)
 """
 
+get_description = """
+## Search for specific books with these filters (they're all optional)
+
+- ### `creator_name` means the user who created the book in the system,
+    ### not the author.
+"""
+
 patch_description = """
 ## About the `patch` method in books:
 
@@ -90,14 +97,40 @@ def create_book(book: BookIn, session: T_Session, current_user: CurrentUser):
     return create_book
 
 
-@router.get('/', response_model=BookList, status_code=status.HTTP_200_OK)
+@router.get(
+    '/',
+    response_model=BookList,
+    status_code=status.HTTP_200_OK,
+    description=get_description,
+)
 def read_books(session: T_Session, book_filter: T_BookFilter):
+    """
+    if filters are received, then this for loop will build a query based on the
+    values received from the filter
+
+    - offset & limit are exluded because the cleanest way to add them is explicitly
+    in the final query
+
+    - if you have doubts about how the T_BookFilter is built, check the schemas file
+    (line 104)
+    """
     query = select(Book)
-    if book_filter.book_genre:
-        query = query.where(Book.genre == book_filter.book_genre)
-    if book_filter.book_name:
-        query = query.where(Book.title.contains(book_filter.book_name))
-    books = session.scalars(query)
+
+    for field, value in book_filter.model_dump(
+        exclude_unset=True, exclude={'offset', 'limit'}
+    ).items():
+        if book_filter.genre:
+            query = query.where(Book.genre == book_filter.genre)
+
+        if book_filter.author_id:
+            query = query.where(Book.author_id == book_filter.author_id)
+
+        if not isinstance(value, int):
+            clean_value = value.strip().lower().replace(' ', '-')
+            column = getattr(Book, field)
+            query = query.filter(column.contains(clean_value))
+
+    books = session.scalars(query.offset(book_filter.offset).limit(book_filter.limit))
 
     return {'books': books}
 

@@ -97,8 +97,13 @@ class Filter(BaseModel):
 
 
 class AuthorFilter(Filter):
-    name: str | None = Field(default=None, description='**search an author by his name**')
-    creator_name: str | None = Field(default=None, description='**search an author by his creator name**',)
+    name: str | None = Field(
+        default=None, description='**search an author by his name**'
+    )
+    creator_name: str | None = Field(
+        default=None,
+        description='**search an author by his creator name**',
+    )
 
 
 class BookFilter(Filter):
@@ -110,4 +115,7 @@ class BookFilter(Filter):
     )
     creator_name: str | None = Field(
         default=None, description='**search an book by its creator name**'
+    )
+    author_id: int | None = Field(
+        default=None, gt=0, description='**search an books by its author id**'
     )
