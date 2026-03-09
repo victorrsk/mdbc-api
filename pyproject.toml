@@ -9,6 +9,7 @@ dependencies = [
     "fastapi[standard]>=0.128.7",
     "pwdlib[argon2]>=0.3.0",
     "pyjwt>=2.11.0",
+    "slowapi>=0.1.9",
     "sqlmodel>=0.0.32",
 ]
 
@@ -30,6 +31,7 @@ extend-exclude = ['migrations', 'database', 'alembic']
 [tool.ruff.lint]
 preview = true
 select = ['I', 'F', 'E', 'W', 'PL', 'PT', 'FAST']
+ignore = ['PLC2701']
 
 [tool.ruff.format]
 preview = true

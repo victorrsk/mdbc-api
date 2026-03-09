@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Query, status
+from fastapi import APIRouter, Query, Request, status
 from sqlmodel import select
 
 from src.database.session import T_Session
@@ -12,6 +12,7 @@ from src.exceptions import (
 )
 from src.models.authors import Author
 from src.models.books import Book
+from src.rate_limiter import limiter
 from src.schemas.schemas import BookFilter, BookIn, BookList, BookOut, BookPatch
 from src.security import CurrentUser
 from src.types import T_PositiveInt
@@ -70,7 +71,10 @@ delete_description = """
     description=post_description,
     status_code=status.HTTP_201_CREATED,
 )
-def create_book(book: BookIn, session: T_Session, current_user: CurrentUser):
+@limiter.shared_limit('20/2minute', scope='books')
+def create_book(
+    book: BookIn, session: T_Session, current_user: CurrentUser, request: Request
+):
 
     book = clean_book_data(book)
 
@@ -103,7 +107,8 @@ def create_book(book: BookIn, session: T_Session, current_user: CurrentUser):
     status_code=status.HTTP_200_OK,
     description=get_description,
 )
-def read_books(session: T_Session, book_filter: T_BookFilter):
+@limiter.shared_limit('20/2minute', scope='books')
+def read_books(session: T_Session, book_filter: T_BookFilter, request: Request):
     """
     if filters are received, then this for loop will build a query based on the
     values received from the filter
@@ -136,7 +141,8 @@ def read_books(session: T_Session, book_filter: T_BookFilter):
 
 
 @router.get('/{book_id}', response_model=BookOut, status_code=status.HTTP_200_OK)
-def read_book(session: T_Session, book_id: T_PositiveInt):
+@limiter.shared_limit('20/2minute', scope='books')
+def read_book(session: T_Session, book_id: T_PositiveInt, request: Request):
     book_db = session.scalar(select(Book).where(Book.id == book_id))
     if not book_db:
         raise EntityNotFound('book')
@@ -150,11 +156,13 @@ def read_book(session: T_Session, book_id: T_PositiveInt):
     status_code=status.HTTP_200_OK,
     description=patch_description,
 )
+@limiter.shared_limit('20/2minute', scope='books')
 def update_book(
     book_id: T_PositiveInt,
     book: BookPatch,
     current_user: CurrentUser,
     session: T_Session,
+    request: Request,
 ):
     if book.title:
         book = clean_book_data(book)
@@ -183,7 +191,13 @@ def update_book(
 @router.delete(
     '/{book_id}', status_code=status.HTTP_200_OK, description=delete_description
 )
-def delete_book(current_user: CurrentUser, session: T_Session, book_id: T_PositiveInt):
+@limiter.shared_limit('20/2minute', scope='books')
+def delete_book(
+    current_user: CurrentUser,
+    session: T_Session,
+    book_id: T_PositiveInt,
+    request: Request,
+):
     book_db = session.scalar(select(Book).where(Book.id == book_id))
     if not book_db:
         raise EntityNotFound('book')

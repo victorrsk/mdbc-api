@@ -5,13 +5,13 @@ from src.database.session import T_Session
 from src.database.utils import clean_user_data
 from src.exceptions import EntityNotFound, NotEnoughPermission, UserDataInUse
 from src.models.users import User
+from src.rate_limiter import limiter
 from src.schemas.schemas import UserIn, UserList, UserOut
 from src.security import CurrentUser, get_pwd_hash
 from src.types import T_PositiveInt
 
 # api router for /users endpoints
 router = APIRouter(prefix='/users', tags=['users'])
-
 
 post_description = """
 ## About user data sanitization:
@@ -48,7 +48,6 @@ delete_description = """
     status_code=status.HTTP_201_CREATED,
 )
 def create_user(req: Request, user: UserIn, session: T_Session):
-    print(f'{req.url}|{req.client.port}|{req.method}')
     user = clean_user_data(user)
     user.password = get_pwd_hash(user.password)
     user_db = User(
@@ -71,7 +70,13 @@ def create_user(req: Request, user: UserIn, session: T_Session):
 
 
 @router.get('/{user_id}', response_model=UserOut, status_code=status.HTTP_200_OK)
-def read_user(user_id: T_PositiveInt, session: T_Session, current_user: CurrentUser):
+@limiter.limit('10/minute')
+def read_user(
+    user_id: T_PositiveInt,
+    session: T_Session,
+    current_user: CurrentUser,
+    request: Request,
+):
     user_db = session.scalar(select(User).where(User.id == user_id))
     if not user_db:
         raise EntityNotFound(entity='user')

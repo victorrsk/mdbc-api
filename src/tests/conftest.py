@@ -10,6 +10,7 @@ from src.database.session import SQLModel, get_session
 from src.models.authors import Author
 from src.models.books import Book
 from src.models.users import User
+from src.rate_limiter import limiter
 from src.schemas.schemas import BookGenres
 from src.security import get_pwd_hash
 
@@ -131,3 +132,11 @@ def book(session, author, user):
     session.refresh(_book)
 
     return _book
+
+
+# disable rate limiter for tests
+
+
+@pytest.fixture(autouse=True)
+def disable_rate_limiter():
+    limiter.enabled = False

@@ -1,5 +1,8 @@
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 
 from src.exceptions import (
     EntityAlreadyExistsConflict,
@@ -11,6 +14,7 @@ from src.exceptions import (
     not_enough_permission_handler,
     user_data_in_use_handler,
 )
+from src.rate_limiter import limiter
 from src.routers import auth, authors, books, users
 
 app_description = """
@@ -24,6 +28,13 @@ app_description = """
     - **auth**: `/auth/token`
 
     - **books**: `/books`, `/books/book_id`
+
+- ### Rate limiter:
+    - `authors`, `auth` and `users` have a limit of 20 requests per minute
+        - The limit is shared beetwen the routes, so for example, making 10 requests in
+        ### authors will let you with only 10 more requests
+    - `books` have a different limit: 20 per 2 minutes
+    - If you run out of requests just wait until it resets the limiter
 """
 
 
@@ -43,6 +54,11 @@ app.add_exception_handler(
 )
 app.add_exception_handler(EntityNotFound, entity_not_found_handler)
 app.add_exception_handler(NotEnoughPermission, not_enough_permission_handler)
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+app.add_middleware(SlowAPIMiddleware)
+
+app.state.limiter = limiter
 
 
 @app.get('/')
