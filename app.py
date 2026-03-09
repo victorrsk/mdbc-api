@@ -23,7 +23,7 @@ app_description = """
 
     - **auth**: `/auth/token`
 
-    - **books**: todo
+    - **books**: `/books`, `/books/book_id`
 """
 
 

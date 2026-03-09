@@ -178,3 +178,53 @@ def test_delete_other_user_author(client, author, token, user):
 
     assert response.json() == {'detail': 'not enough permission'}
     assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+def test_read_authors_by_name(author, token, client):
+    response = client.get(f'/authors?name={author.name}')
+
+    assert response.json() == {
+        'authors': [
+            {
+                'name': author.name,
+                'id': author.id,
+                'creator_name': author.creator_name,
+                'creator_id': author.creator_id,
+            }
+        ]
+    }
+    assert response.status_code == status.HTTP_200_OK
+
+
+def test_read_authors_by_creator_name(author, token, client):
+    response = client.get(f'/authors?creator_name={author.creator_name}')
+
+    assert response.json() == {
+        'authors': [
+            {
+                'name': author.name,
+                'id': author.id,
+                'creator_name': author.creator_name,
+                'creator_id': author.creator_id,
+            }
+        ]
+    }
+    assert response.status_code == status.HTTP_200_OK
+
+
+def test_read_authors_all_filters(author, token, client):
+    response = client.get(
+        f'/authors?creator_name={author.creator_name}&name={author.name}'
+    )
+
+    assert response.json() == {
+        'authors': [
+            {
+                'name': author.name,
+                'id': author.id,
+                'creator_name': author.creator_name,
+                'creator_id': author.creator_id,
+            }
+        ]
+    }
+    assert response.status_code == status.HTTP_200_OK

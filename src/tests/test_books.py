@@ -222,3 +222,100 @@ def test_delete_other_user_book(client, token, user, author):
 
     assert response.json() == {'detail': 'not enough permission'}
     assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+def test_read_books_by_genre(client, token, book):
+    response = client.get(f'/books?genre={book.genre.value}')
+
+    assert response.json() == {
+        'books': [
+            {
+                'title': book.title,
+                'id': book.id,
+                'creator_name': book.creator_name,
+                'creator_id': book.creator_id,
+                'author_id': book.author_id,
+                'genre': book.genre.value,
+                'year': book.year,
+            }
+        ]
+    }
+    assert response.status_code == status.HTTP_200_OK
+
+
+def test_read_books_by_title(client, token, book):
+    response = client.get(f'/books?title={book.title}')
+
+    assert response.json() == {
+        'books': [
+            {
+                'title': book.title,
+                'id': book.id,
+                'creator_name': book.creator_name,
+                'creator_id': book.creator_id,
+                'author_id': book.author_id,
+                'genre': book.genre.value,
+                'year': book.year,
+            }
+        ]
+    }
+    assert response.status_code == status.HTTP_200_OK
+
+
+def test_read_books_by_creator_name(client, token, book):
+    response = client.get(f'/books?creator_name={book.creator_name}')
+
+    assert response.json() == {
+        'books': [
+            {
+                'title': book.title,
+                'id': book.id,
+                'creator_name': book.creator_name,
+                'creator_id': book.creator_id,
+                'author_id': book.author_id,
+                'genre': book.genre.value,
+                'year': book.year,
+            }
+        ]
+    }
+    assert response.status_code == status.HTTP_200_OK
+
+
+def test_read_books_by_author_id(client, token, book):
+    response = client.get(f'/books?author_id={book.author_id}')
+
+    assert response.json() == {
+        'books': [
+            {
+                'title': book.title,
+                'id': book.id,
+                'creator_name': book.creator_name,
+                'creator_id': book.creator_id,
+                'author_id': book.author_id,
+                'genre': book.genre.value,
+                'year': book.year,
+            }
+        ]
+    }
+    assert response.status_code == status.HTTP_200_OK
+
+
+def test_read_books_all_filters(client, token, book):
+    response = client.get(
+        f'/books?title={book.title}&author_id={book.author_id}&creator_name={book.creator_name}'
+    )
+
+    assert response.json() == {
+        'books': [
+            {
+                'title': book.title,
+                'id': book.id,
+                'creator_name': book.creator_name,
+                'creator_id': book.creator_id,
+                'author_id': book.author_id,
+                'genre': book.genre.value,
+                'year': book.year,
+            }
+        ]
+    }
+    assert response.status_code == status.HTTP_200_OK
