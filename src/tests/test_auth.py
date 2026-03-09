@@ -9,7 +9,7 @@ from src.settings import Settings
 # 1 - the tests where the token is literally created by sending a post request
 # with all the necessary data to /auth/token
 
-# 2 - the tests where the token are manipulated to ensure the raising of some errors
+# 2 - the tests where the token is manipulated to ensure the raising of some errors
 # that's why there are similar tests but with different contexts
 
 
