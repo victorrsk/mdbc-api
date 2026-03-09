@@ -5,6 +5,7 @@ from sqlmodel import Field, Relationship, SQLModel
 if TYPE_CHECKING:
     from .authors import Author
     from .books import Book
+    from .reviews import Review
 
 
 class User(SQLModel, table=True):
@@ -15,6 +16,7 @@ class User(SQLModel, table=True):
 
     authors: list['Author'] = Relationship(cascade_delete=True, back_populates='user')
     books: list['Book'] = Relationship(cascade_delete=True, back_populates='user')
+    reviews: list['Review'] = Relationship(cascade_delete=True, back_populates='user')
 
     # used to allow extra attributes in tests
     model_config = {'extra': 'allow'}
