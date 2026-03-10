@@ -1,6 +1,6 @@
 from logging.config import fileConfig
 
-from src.models import users, authors, books
+from src.models import users, authors, books, reviews
 
 from sqlalchemy import engine_from_config, pool
 from sqlmodel import SQLModel
