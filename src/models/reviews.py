@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
+    from .books import Book
     from .users import User
 
 
@@ -14,3 +15,4 @@ class Review(SQLModel, table=True):
     comment: str = Field(nullable=False)
 
     user: 'User' = Relationship(back_populates='reviews')
+    book: 'Book' = Relationship(back_populates='reviews')

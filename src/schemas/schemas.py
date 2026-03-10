@@ -119,3 +119,21 @@ class BookFilter(Filter):
     author_id: int | None = Field(
         default=None, gt=0, description='**search an books by its author id**'
     )
+
+
+class BookReviewIn(BaseModel):
+    comment: str = Field(
+        min_length=10, max_length=200, examples=['This book is awesome!']
+    )
+
+
+class BookReviewOut(BaseModel):
+    id: int
+    user_id: int
+    book_id: int
+    book_title: str
+    comment: str
+
+
+class BookReviewList(BaseModel):
+    reviews: list[BookReviewOut]

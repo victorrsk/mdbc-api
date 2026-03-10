@@ -18,7 +18,7 @@ def user_data_in_use_handler(exc: UserDataInUse, req: Request):
 
 
 class EntityAlreadyExistsConflict(Exception):
-    def __init__(self, entity: Literal['author', 'book']):
+    def __init__(self, entity: Literal['author', 'book', 'review']):
         self.entity = entity
 
 
@@ -32,7 +32,7 @@ def entity_already_exists_conflict_handler(
 
 
 class EntityNotFound(Exception):
-    def __init__(self, entity: Literal['author', 'book', 'user']):
+    def __init__(self, entity: Literal['author', 'book', 'user', 'review']):
         self.entity = entity
 
 

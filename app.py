@@ -27,14 +27,18 @@ app_description = """
 
     - **auth**: `/auth/token`
 
-    - **books**: `/books`, `/books/book_id`
+    - **books**: `/books`, `/books/book_id`, `books/book_id/reviews`,
+    `books/reviews/review_id`
 
 - ### Rate limiter:
     - **`authors`, `auth` and `users` have a limit of 20 requests per minute**
         - **The limit is shared beetwen the routes, so for example, making 10 requests**
         **in authors will let you with only 10 more requests**
 
-    - **`books` have a different limit: 20 per 2 minutes**
+    - **`books` have a rate limit of 20 requests per 2 minutes**
+        - **The limit is shared**
+    - **`books/reviews` endpoints have a limit of 10 requests per minute**
+        - **The limit is shared**
     - **If you run out of requests just wait until it resets the limiter**
 """
 
