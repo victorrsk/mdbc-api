@@ -40,7 +40,9 @@ delete_description = """
 ## About the `delete` method in authors:
 
 - ### You can only delete an author created by you (the current authenticated user)
-- ### By deleting an author all the books related to its id will be deleted" too
+- ### By deleting an author all the books related to its id will be deleted too
+- ### If an author with books that have reviews is deleted, then the reviews are deleted
+    ### too
 """
 
 
@@ -80,7 +82,9 @@ def read_author(
     return author
 
 
-@router.get('/', response_model=AuthorsList, status_code=status.HTTP_200_OK)
+@router.get(
+    '/', response_model=AuthorsList, status_code=status.HTTP_200_OK, description='.'
+)
 def read_authors(session: T_Session, author_filter: T_AuthorFilter):
     """
     if filters are received, then this for loop will build a query based on the values

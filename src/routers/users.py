@@ -38,6 +38,7 @@ delete_description = """
     ### books related to this author)
 - ### Even if you didn't created an author but created book(s), all the books related to
     ### your id will be deleted
+- ### All the reviews related to your id will be deleted
 """
 
 
@@ -85,7 +86,7 @@ def read_user(
 
 
 @router.get('/', response_model=UserList, status_code=status.HTTP_200_OK)
-def read_users(session: T_Session, current_user: CurrentUser):
+def read_users(session: T_Session):
     users_list = session.scalars(select(User))
 
     return {'users': users_list}

@@ -12,8 +12,18 @@ from src.exceptions import (
 )
 from src.models.authors import Author
 from src.models.books import Book
+from src.models.reviews import Review
 from src.rate_limiter import limiter
-from src.schemas.schemas import BookFilter, BookIn, BookList, BookOut, BookPatch
+from src.schemas.schemas import (
+    BookFilter,
+    BookIn,
+    BookList,
+    BookOut,
+    BookPatch,
+    BookReviewIn,
+    BookReviewList,
+    BookReviewOut,
+)
 from src.security import CurrentUser
 from src.types import T_PositiveInt
 
@@ -62,6 +72,35 @@ delete_description = """
 
 - ### You can only delete books created by you (the current authenticated user)
 - ### You can only delete a book by providing a valid book_id
+- ### All the reviews related to deleted book will be deleted too
+"""
+
+# reviews description
+
+rev_post_description = """
+## About creating a review:
+
+- ### You can only create a review for an existent book
+- ### The same user can review a book only one time, otherwise it will raise an error
+"""
+
+get_book_revs_description = """
+## About reading a review:
+
+- ### You can only read reviews by providing an existent book_id
+"""
+
+get_review_by_id_description = """
+## About reading a specific review:
+
+- ### You must provide an existent review id in order the read it
+"""
+
+
+delete_rev_by_id_description = """
+## About deleting a review:
+
+- ### You can only delete reviews created by you (the current authenticated user)
 """
 
 
@@ -208,3 +247,96 @@ def delete_book(
     session.commit()
 
     return {'message': 'book deleted'}
+
+
+@router.post(
+    '/{book_id}/reviews',
+    response_model=BookReviewOut,
+    status_code=status.HTTP_201_CREATED,
+    description=rev_post_description,
+)
+@limiter.shared_limit('10/minute', scope='reviews')
+def create_book_review(
+    book_id: T_PositiveInt,
+    review: BookReviewIn,
+    session: T_Session,
+    current_user: CurrentUser,
+    request: Request,
+):
+    book_db = session.scalar(select(Book).where(Book.id == book_id))
+    review_exists = session.scalar(
+        select(Review).where(
+            Review.user_id == current_user.id, Review.book_id == book_id
+        )
+    )
+    if not book_db:
+        raise EntityNotFound('book')
+    if review_exists:
+        raise EntityAlreadyExistsConflict('review')
+
+    review_create = Review(
+        book_id=book_db.id,
+        book_title=book_db.title,
+        user_id=current_user.id,
+        comment=review.comment,
+    )
+    session.add(review_create)
+    session.commit()
+    session.refresh(review_create)
+
+    return review_create
+
+
+@router.get(
+    '/{book_id}/reviews',
+    response_model=BookReviewList,
+    status_code=status.HTTP_200_OK,
+    description=get_book_revs_description,
+)
+@limiter.shared_limit('10/minute', scope='reviews')
+def read_book_reviews(book_id: T_PositiveInt, session: T_Session, request: Request):
+    book_db = session.scalar(select(Book).where(Book.id == book_id))
+    if not book_db:
+        raise EntityNotFound('book')
+    reviews_db = session.scalars(select(Review).where(Review.book_id == book_id)).all()
+    if len(reviews_db) == 0:
+        raise EntityNotFound('review')
+
+    return {'reviews': reviews_db}
+
+
+@router.get(
+    '/reviews/{review_id}',
+    response_model=BookReviewOut,
+    status_code=status.HTTP_200_OK,
+    description=get_review_by_id_description,
+)
+@limiter.shared_limit('10/minute', scope='reviews')
+def read_review(review_id: T_PositiveInt, session: T_Session, request: Request):
+    review_db = session.scalar(select(Review).where(Review.id == review_id))
+
+    return review_db
+
+
+@router.delete(
+    '/review/{review_id}',
+    status_code=status.HTTP_200_OK,
+    description=delete_rev_by_id_description,
+)
+@limiter.shared_limit('10/minute', scope='reviews')
+def delete_review(
+    session: T_Session,
+    review_id: T_PositiveInt,
+    current_user: CurrentUser,
+    request: Request,
+):
+    review_db = session.scalar(select(Review).where(Review.id == review_id))
+    if not review_db:
+        raise EntityNotFound('review')
+    if review_db.user_id != current_user.id:
+        raise NotEnoughPermission()
+
+    session.delete(review_db)
+    session.commit()
+
+    return {'message': 'review deleted'}
