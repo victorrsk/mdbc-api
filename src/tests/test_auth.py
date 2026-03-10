@@ -66,7 +66,7 @@ def test_incorrect_pwd_for_token(client, user):
 # this will send a get request to an protected endpoint
 # the 'token' in the header is invalid, so at some moment it generates an Decode error
 def test_token_decode_error(client):
-    response = client.get('/users/', headers={'Authorization': 'Bearer invalid_token'})
+    response = client.get('/users/1', headers={'Authorization': 'Bearer invalid_token'})
 
     assert response.json() == {'detail': 'could not validate credentials'}
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
@@ -77,7 +77,7 @@ def test_no_sub_in_token(client):
     data = {'invalid': 'invalid'}
     token = create_access_token(data=data)
 
-    response = client.get('/users/', headers={'Authorization': f'Bearer {token}'})
+    response = client.get('/users/1', headers={'Authorization': f'Bearer {token}'})
 
     assert response.json() == {'detail': 'could not validate credentials'}
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
@@ -88,7 +88,7 @@ def test_no_content_in_sub_token(client):
     data = {'sub': ''}
     token = create_access_token(data=data)
 
-    response = client.get('/users/', headers={'Authorization': f'Bearer {token}'})
+    response = client.get('/users/1', headers={'Authorization': f'Bearer {token}'})
 
     assert response.json() == {'detail': 'could not validate credentials'}
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
@@ -105,7 +105,7 @@ def test_expired_token(client, user):
     token = response.json()['access_token']
 
     with freeze_time('2026-01-01 12:30:00'):
-        response = client.get('/users/', headers={'Authorization': f'Bearer {token}'})
+        response = client.get('/users/1', headers={'Authorization': f'Bearer {token}'})
 
     assert response.json() == {'detail': 'could not validate credentials'}
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
@@ -115,7 +115,7 @@ def test_nonexistent_email_in_token(client):
     data = {'sub': 'invalid@email.com'}
     token = create_access_token(data=data)
 
-    response = client.get('/users/', headers={'Authorization': f'Bearer {token}'})
+    response = client.get('/users/1', headers={'Authorization': f'Bearer {token}'})
 
     assert response.json() == {'detail': 'could not validate credentials'}
     assert response.status_code == status.HTTP_401_UNAUTHORIZED

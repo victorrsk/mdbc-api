@@ -99,13 +99,6 @@ def test_read_user_not_authenticated(client):
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
-def test_read_users_not_authenticated(client):
-    response = client.get('/users')
-
-    assert response.json() == {'detail': 'Not authenticated'}
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
-
-
 def test_update_user(client, user, token):
     # updates the existent user created from the fixture
     response = client.put(

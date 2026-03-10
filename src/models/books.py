@@ -1,7 +1,9 @@
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .authors import Author, User
+    from .authors import Author
+    from .reviews import Review
+    from .users import User
 
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -19,5 +21,6 @@ class Book(SQLModel, table=True):
 
     author: 'Author' = Relationship(back_populates='books')
     user: 'User' = Relationship(back_populates='books')
+    reviews: list[Review] = Relationship(back_populates='book', cascade_delete=True)
 
     model_config = {'extra': 'ignore'}
