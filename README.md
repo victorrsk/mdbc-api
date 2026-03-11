@@ -1,4 +1,4 @@
-![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/victorrsk/mdbc-api/pipeline.yaml)
+[![pipeline mdbc api](https://github.com/victorrsk/mdbc-api/actions/workflows/pipeline.yaml/badge.svg)](https://github.com/victorrsk/mdbc-api/actions/workflows/pipeline.yaml)
 
 # **My Digital Books Collection**
 
