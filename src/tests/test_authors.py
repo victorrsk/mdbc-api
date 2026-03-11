@@ -1,9 +1,5 @@
 from fastapi import status
 
-# TODO
-# 9. test delete author
-# 10. teste delete author out of user authors list range (403 forbidden)
-
 
 def test_create_author(user, client, token):
     response = client.post(
@@ -103,6 +99,7 @@ def test_update_author_already_exists(client, token, author, user):
 
 
 def test_update_author_out_of_user_authors_list_range(client, token):
+    # will try to update other author that is not created by this user
     response = client.put(
         '/authors/1',
         json={'name': 'test'},
@@ -114,6 +111,7 @@ def test_update_author_out_of_user_authors_list_range(client, token):
 
 
 def test_update_other_user_author(client, author, token, user):
+    # will create other user, get a token an creating an author
     client.post(
         '/users',
         json={'username': 'test2', 'email': 'test2@email.com', 'password': 'test2pwd'},
@@ -128,7 +126,7 @@ def test_update_other_user_author(client, author, token, user):
         json={'name': 'other_author'},
         headers={'Authorization': f'Bearer {token2}'},
     )
-
+    # will try to update an existent author but owned by other user
     response = client.put(
         '/authors/2',
         json={'name': 'bleehhh'},
