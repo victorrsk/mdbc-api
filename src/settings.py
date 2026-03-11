@@ -7,3 +7,5 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     TOKEN_ALGORITHM: str
     TOKEN_MINUTES_EXPIRE_TIME: int
+    MAIL_PASSWORD: str
+    MAIL_FROM: str

@@ -1,8 +1,9 @@
-from fastapi import APIRouter, HTTPException, Request, status
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, status
 from sqlmodel import select
 
 from src.database.session import T_Session
 from src.database.utils import clean_user_data
+from src.email_handler import send_email
 from src.exceptions import EntityNotFound, NotEnoughPermission, UserDataInUse
 from src.models.users import User
 from src.rate_limiter import limiter
@@ -21,6 +22,11 @@ post_description = """
 - ### The email will have all the blank spaces removed (there isn't a real strong
     ### email validation, only the `Emailstr` type from pydantic)
 - ### The password will have all the blank spaces removed (password gonna be hashed)
+
+## About the email:
+
+### In case you put a valid email used by you and all your data is correct, a simple
+### sign up confirmation will be send
 """
 
 put_description = """
@@ -48,7 +54,9 @@ delete_description = """
     description=post_description,
     status_code=status.HTTP_201_CREATED,
 )
-def create_user(req: Request, user: UserIn, session: T_Session):
+def create_user(
+    req: Request, user: UserIn, session: T_Session, background_tasks: BackgroundTasks
+):
     user = clean_user_data(user)
     user.password = get_pwd_hash(user.password)
     user_db = User(
@@ -66,6 +74,8 @@ def create_user(req: Request, user: UserIn, session: T_Session):
     session.add(user_db)
     session.commit()
     session.refresh(user_db)
+
+    background_tasks.add_task(send_email, user_db)
 
     return user_db
 
