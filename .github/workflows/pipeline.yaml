@@ -35,3 +35,5 @@ jobs:
       TOKEN_MINUTES_EXPIRE_TIME: ${{ secrets.TOKEN_MINUTES_EXPIRE_TIME }}
       TOKEN_ALGORITHM: ${{ secrets.TOKEN_ALGORITHM }}
       SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+      MAIL_FROM: ${{ secrets.MAIL_FROM }}
