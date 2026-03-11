@@ -24,8 +24,18 @@ The tools below were used as the core for the API construction. You can check th
 | :-----: | :--------: |
 | **Python +3.14** | Language |
 | **FastAPI** | Framework |
+| **SQLite** | Database |
 | **SQLModel** | Database ORM |
 | **Alembic** | Database schema migrations |
 | **Pydantic** | Data and schema validation |
 | **Pydantic settings** | .env management |
 | **Pytest** | Unit tests |
+
+## Features
+- Users CRUD ✅
+- Authors CRUD ✅
+- Books CRUD ✅
+- Book review system ✅
+- Token authentication ✅
+- Query filters for books/authors ✅
+- Send email message after sign up providing a valid email ✅
