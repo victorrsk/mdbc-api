@@ -319,7 +319,7 @@ def read_review(review_id: T_PositiveInt, session: T_Session, request: Request):
 
 
 @router.delete(
-    '/review/{review_id}',
+    '/reviews/{review_id}',
     status_code=status.HTTP_200_OK,
     description=delete_rev_by_id_description,
 )

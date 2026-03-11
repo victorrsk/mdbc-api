@@ -9,6 +9,7 @@ from app import app
 from src.database.session import SQLModel, get_session
 from src.models.authors import Author
 from src.models.books import Book
+from src.models.reviews import Review
 from src.models.users import User
 from src.rate_limiter import limiter
 from src.schemas.schemas import BookGenres
@@ -47,6 +48,17 @@ class RandomBook(Factory):
     author_id = 1
     creator_id = 1
     creator_name = 'test0'
+
+
+class RandomReview(Factory):
+    class Meta:
+        model = Review
+
+    # there is nothing "random" here bruh
+    book_id = 1
+    user_id = 1
+    comment = 'just a comment'
+    book_title = 'book0'
 
 
 @pytest.fixture
@@ -132,6 +144,17 @@ def book(session, author, user):
     session.refresh(_book)
 
     return _book
+
+
+@pytest.fixture
+def review(session):
+    _review = RandomReview()
+
+    session.add(_review)
+    session.commit()
+    session.refresh(_review)
+
+    return _review
 
 
 # disable rate limiter for tests

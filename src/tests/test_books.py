@@ -1,5 +1,14 @@
 from fastapi import status
 
+"""
+In order to have a great undestanding of the tests, you probaly will need some pytest
+knowledge about fixtures and related things.
+
+Some tests are really confusing and the mocked data for the entities fixtures like
+authors, book and reviews is hard coded.
+- Probally will solve this later
+"""
+
 
 def test_create_book(client, user, token, author):
     response = client.post(
@@ -135,6 +144,7 @@ def test_update_book_title_in_use(client, token, user, author, book):
 
 
 def test_update_other_user_book(client, token, user, author):
+    # creating other user, getting a token and posting a book
     client.post(
         '/users',
         json={'username': 'test2', 'email': 'test2@email.com', 'password': 'test2pwd'},
@@ -148,6 +158,7 @@ def test_update_other_user_book(client, token, user, author):
         json={'title': 'new title', 'genre': 'poetry', 'year': 2000, 'author_id': 1},
         headers={'Authorization': f'Bearer {token2}'},
     )
+    # just trying to update the book created by the user above
     response = client.patch(
         '/books/1',
         json={'title': 'new title', 'genre': 'poetry', 'year': 2000, 'author_id': 1},
@@ -202,6 +213,7 @@ def test_delete_non_existent_book(client, token):
 
 
 def test_delete_other_user_book(client, token, user, author):
+    # just creating other user, getting a token and posting a book in this user id
     client.post(
         '/users',
         json={'username': 'test2', 'email': 'test2@email.com', 'password': 'test2pwd'},
@@ -215,6 +227,7 @@ def test_delete_other_user_book(client, token, user, author):
         json={'title': 'new title', 'genre': 'poetry', 'year': 2000, 'author_id': 1},
         headers={'Authorization': f'Bearer {token2}'},
     )
+    # trying to delete the book created above by other user
     response = client.delete(
         '/books/1',
         headers={'Authorization': f'Bearer {token}'},
@@ -319,3 +332,114 @@ def test_read_books_all_filters(client, token, book):
         ]
     }
     assert response.status_code == status.HTTP_200_OK
+
+
+def test_create_book_review(client, token, book, user):
+    response = client.post(
+        f'/books/{book.id}/reviews',
+        json={'comment': 'test comment haha'},
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.json() == {
+        'id': 1,
+        'book_id': book.id,
+        'user_id': user.id,
+        'comment': 'test comment haha',
+        'book_title': book.title,
+    }
+    assert response.status_code == status.HTTP_201_CREATED
+
+
+def test_read_book_review(client, token, book, user):
+    client.post(
+        f'/books/{book.id}/reviews',
+        json={'comment': 'test comment haha'},
+        headers={'Authorization': f'Bearer {token}'},
+    )
+    response = client.get(f'/books/{book.id}/reviews')
+
+    assert response.json() == {
+        'reviews': [
+            {
+                'id': 1,
+                'book_id': book.id,
+                'user_id': user.id,
+                'comment': 'test comment haha',
+                'book_title': book.title,
+            }
+        ]
+    }
+    assert response.status_code == status.HTTP_200_OK
+
+
+def test_read_review_by_id(client, review):
+    response = client.get(f'/books/reviews/{review.id}')
+
+    assert response.json() == {
+        'id': review.id,
+        'book_title': review.book_title,
+        'book_id': review.book_id,
+        'user_id': review.user_id,
+        'comment': review.comment,
+    }
+    assert response.status_code == status.HTTP_200_OK
+
+
+def test_read_non_existent_book_review(client):
+    response = client.get('/books/1/reviews')
+
+    assert response.json() == {'detail': 'book not found'}
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+def test_delete_review(client, review, token):
+    response = client.delete(
+        f'/books/reviews/{review.id}', headers={'Authorization': f'Bearer {token}'}
+    )
+
+    assert response.json() == {'message': 'review deleted'}
+    assert response.status_code == status.HTTP_200_OK
+
+
+def test_delete_other_user_review(client, token, review, book):
+    # just creating another user, getting a token and posting a book review
+    client.post(
+        '/users',
+        json={
+            'username': 'testing',
+            'email': 'testing@email.com',
+            'password': 'pwd123456',
+        },
+    )
+    token_response = client.post(
+        '/auth/token/', data={'username': 'testing@email.com', 'password': 'pwd123456'}
+    )
+    token2 = token_response.json()['access_token']
+
+    client.post(
+        f'/books/{review.book_id}/reviews',
+        json={'comment': 'horrible book, bleh'},
+        headers={'Authorization': f'Bearer {token2}'},
+    )
+    # this block is the only thing that matters
+    response = client.delete(
+        '/books/reviews/2', headers={'Authorization': f'Bearer {token}'}
+    )
+
+    assert response.json() == {'detail': 'not enough permission'}
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+def test_create_two_reviews_same_book(client, book, review, token):
+    # the review fixture is created in the DB with the same user_id of the next
+    # post request for the same book
+    # it will raise an error cause a user can only review a book one time
+    response = client.post(
+        f'/books/{review.book_id}/reviews',
+        json={'comment': 'another review, same user'},
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.json() == {'detail': 'review already exists'}
+    assert response.status_code == status.HTTP_409_CONFLICT
