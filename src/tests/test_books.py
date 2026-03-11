@@ -443,3 +443,30 @@ def test_create_two_reviews_same_book(client, book, review, token):
 
     assert response.json() == {'detail': 'review already exists'}
     assert response.status_code == status.HTTP_409_CONFLICT
+
+
+def test_create_non_existent_book_review(client, token):
+    response = client.post(
+        '/books/1/reviews',
+        json={'comment': 'this will raise an error'},
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.json() == {'detail': 'book not found'}
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+def test_no_book_reviews(client, book):
+    response = client.get(f'/books/{book.id}/reviews')
+
+    assert response.json() == {'detail': 'review not found'}
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+def test_delete_non_existent_review(client, book, token):
+    response = client.delete(
+        '/books/reviews/1', headers={'Authorization': f'Bearer {token}'}
+    )
+
+    assert response.json() == {'detail': 'review not found'}
+    assert response.status_code == status.HTTP_404_NOT_FOUND
