@@ -1,3 +1,5 @@
+import os
+
 import pytest
 from factory import faker, fuzzy
 from factory.base import Factory
@@ -59,6 +61,14 @@ class RandomReview(Factory):
     user_id = 1
     comment = 'just a comment'
     book_title = 'book0'
+
+
+# ------------------------------------------------------------------------
+
+
+@pytest.fixture(scope='session', autouse=True)
+def deactivate_email_sender():
+    os.environ['TEST_FLAG'] = '1'
 
 
 @pytest.fixture

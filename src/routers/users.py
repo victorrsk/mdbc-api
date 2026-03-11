@@ -9,6 +9,7 @@ from src.models.users import User
 from src.rate_limiter import limiter
 from src.schemas.schemas import UserIn, UserList, UserOut
 from src.security import CurrentUser, get_pwd_hash
+from src.settings import Settings
 from src.types import T_PositiveInt
 
 # api router for /users endpoints
@@ -74,8 +75,8 @@ def create_user(
     session.add(user_db)
     session.commit()
     session.refresh(user_db)
-
-    background_tasks.add_task(send_email, user_db)
+    if not Settings().TEST_FLAG:
+        background_tasks.add_task(send_email, user_db)
 
     return user_db
 

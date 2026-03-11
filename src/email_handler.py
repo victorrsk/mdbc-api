@@ -17,6 +17,7 @@ config = ConnectionConfig(
 
 
 async def send_email(user: User):
+    user.username = user.username.replace('-', ' ')
     body_content = f"""
     <h3>Congrats! You're now registered in My Digital Books Collection!</h3></br>
     <p>You're logged as <b>{user.username}</b> with <b>{user.email}</b></p>

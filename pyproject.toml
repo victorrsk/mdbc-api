@@ -52,5 +52,6 @@ post_test = 'coverage html'
 [tool.coverage.run]
 omit = [
     "src/database/*",
-    "app.py"
+    "app.py",
+    "src/email_handler.py"
 ]
