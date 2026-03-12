@@ -20,8 +20,16 @@ You can try it at [mdbc-api.com](https://mdbc-api.onrender.com/) or [mdbc-api.co
   - Trying the api this way, keep in mind that you will need to manually get the JWT token sending a post request to `/auth/token` with the fields:
     1. `username` wich in fact is the email of the user created by you via post at `/users`(you must create one to get a token)
     2. `password` wich is the password of the user created
+  - The post data to `/auth/token` **MUST** be sent in the `form-data` or `x-www-form-urlencoded` format
   - After doing the user "creation" and getting the token at the specified route, if you try to access the protected routes you'll need to manually pass the received JWT token at the `Authorization` header with `Bearer <token>`
-  - 
+  - You can just copy n paste this body format to create a user:
+    ```
+    {
+      "username": "test_user",
+      "email": "test_user@email.com",
+      "password": "test_password"
+    }
+    ```
 
 ## Stack
 
