@@ -75,7 +75,8 @@ def create_user(
     session.add(user_db)
     session.commit()
     session.refresh(user_db)
-    
+    print('sending email...')
+    print(f'email config: sender is {Settings().MAIL_FROM}')
     background_tasks.add_task(send_email, user_db)
 
     return user_db
