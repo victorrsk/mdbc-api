@@ -7,11 +7,11 @@ config = ConnectionConfig(
     MAIL_USERNAME=Settings().MAIL_FROM,
     MAIL_PASSWORD=Settings().MAIL_PASSWORD,
     MAIL_FROM=Settings().MAIL_FROM,
-    MAIL_PORT=587,
+    MAIL_PORT=465,
     MAIL_SERVER='smtp.gmail.com',
     MAIL_FROM_NAME='My Digital Books Collection',
-    MAIL_STARTTLS=True,
-    MAIL_SSL_TLS=False,
+    MAIL_STARTTLS=False,
+    MAIL_SSL_TLS=True,
     USE_CREDENTIALS=True,
 )
 
