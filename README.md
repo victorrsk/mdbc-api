@@ -13,8 +13,15 @@ The "*My Digital Books Collection*" api features an almost complete web book arc
 
 ![api endpoints](misc/api_endpoints.png)
 ## How to run
-*TODO*
-
+The api is currently deployed at **Render** over a free instance. Keep in mind that the application will be on "sleep" stage after a time wihtout requests and can take some time to be ready to use.
+You can try it at [mdbc-api.com](https://mdbc-api.onrender.com/) or [mdbc-api.com/docs](https://mdbc-api.onrender.com/docs)
+- The second option is the must use one if you want to try it via SwaggerUI
+- The first option is more reliable if you're goint to try the api via postman/insomnia
+  - Trying the api this way, keep in mind that you will need to manually get the JWT token sending a post request to `/auth/token` with the fields:
+    1. `username` wich in fact is the email of the user created by you via post at `/users`(you must create one to get a token)
+    2. `password` wich is the password of the user created
+  - After doing the user "creation" and getting the token at the specified route, if you try to access the protected routes you'll need to manually pass the received JWT token at the `Authorization` header with `Bearer <token>`
+  - 
 
 ## Stack
 
