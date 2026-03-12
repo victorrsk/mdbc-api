@@ -15,13 +15,15 @@ The "*My Digital Books Collection*" api features an almost complete web book arc
 ## How to run
 The api is currently deployed at **Render** over a free instance. Keep in mind that the application will be on "sleep" stage after a time wihtout requests and can take some time to be ready to use.
 You can try it at [mdbc-api.com](https://mdbc-api.onrender.com/) or [mdbc-api.com/docs](https://mdbc-api.onrender.com/docs)
-- The second option is the must use one if you want to try it via SwaggerUI
-- The first option is more reliable if you're goint to try the api via postman/insomnia
+- The second option is the must use one if you want to try it via SwaggerUI and want a fast and clean try
+- The first option is more reliable if you're going to try the api via postman/insomnia
   - Trying the api this way, keep in mind that you will need to manually get the JWT token sending a post request to `/auth/token` with the fields:
     1. `username` wich in fact is the email of the user created by you via post at `/users`(you must create one to get a token)
     2. `password` wich is the password of the user created
   - The post data to `/auth/token` **MUST** be sent in the `form-data` or `x-www-form-urlencoded` format
+    ![postman example](misc/api_test_software_example.png)
   - After doing the user "creation" and getting the token at the specified route, if you try to access the protected routes you'll need to manually pass the received JWT token at the `Authorization` header with `Bearer <token>`
+    ![auth token example](misc/token_example.png)
   - You can just copy n paste this body format to create a user:
     ```
     {
@@ -47,10 +49,11 @@ The tools below were used as the core for the API construction. You can check th
 | **Pytest** | Unit tests |
 
 ## Features
+#### ❗❗The email message feature isn't working due to some problem related to the host (Render) blocking the smtp port/server. I tried to solve it but apparently there's nothing much i can do without unecessarily increasing the code complexity
 - Users CRUD ✅
 - Authors CRUD ✅
 - Books CRUD ✅
 - Book review system ✅
 - Token authentication ✅
 - Query filters for books/authors ✅
-- Send email message after sign up providing a valid email ✅
+- Send email message after sign up providing a valid email (down) ✅
